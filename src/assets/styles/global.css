@@ -1,0 +1,47 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at top left, var(--color-accent-soft), transparent 34%),
+    linear-gradient(180deg, var(--color-bg), var(--color-bg-muted));
+  transition:
+    background 240ms ease,
+    color 240ms ease;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.panel {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft), var(--shadow-panel);
+  backdrop-filter: blur(16px);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}

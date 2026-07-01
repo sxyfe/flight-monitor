@@ -1,0 +1,4 @@
+# Flight Watch cron 示例（需本机服务在 8767 运行，或先启动 npm run flight-watch:dev）
+
+# 每天 8:00、20:00 执行全部 enabled 监控
+0 8,20 * * * curl -s -X POST http://127.0.0.1:8767/api/watch/run-once -H 'Content-Type: application/json' -d '{}' >> ~/flight-watch-cron.log 2>&1

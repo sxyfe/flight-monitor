@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RollingGo SearchIntent",
+  "description": "自然语言解析后的查价意图，供 exhaustive_search / nl-search / RollingGo MCP 使用",
+  "type": "object",
+  "required": ["origins", "date_start", "date_end"],
+  "properties": {
+    "origins": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "出发城市 IATA 编码，如 BJS、TSN"
+    },
+    "destinations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "目的地城市编码；空数组时由 countries 展开"
+    },
+    "countries": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "国家中文名：泰国、菲律宾、印度尼西亚、马来西亚、日本"
+    },
+    "date_start": { "type": "string", "format": "date" },
+    "date_end": { "type": "string", "format": "date" },
+    "min_stay_days": { "type": "integer", "default": 7 },
+    "max_stay_days": { "type": ["integer", "null"] },
+    "max_price": { "type": ["number", "null"] },
+    "trip_modes": {
+      "type": "array",
+      "items": { "enum": ["round_trip", "open_jaw"] }
+    },
+    "cabin": { "type": "string", "default": "ECONOMY" },
+    "adults": { "type": "integer", "default": 1 },
+    "children": { "type": "integer", "default": 0 }
+  },
+  "examples": [
+    {
+      "origins": ["BJS", "TSN"],
+      "destinations": [],
+      "countries": ["泰国", "菲律宾"],
+      "date_start": "2026-09-28",
+      "date_end": "2026-10-10",
+      "min_stay_days": 7,
+      "max_price": 2500,
+      "trip_modes": ["round_trip", "open_jaw"],
+      "cabin": "ECONOMY",
+      "adults": 1,
+      "children": 0
+    }
+  ]
+}

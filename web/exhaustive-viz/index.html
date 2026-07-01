@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>穷举特价 · 雷达图</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="hero">
+    <div class="hero-badge">EXHAUSTIVE SCAN</div>
+    <h1>特价航班雷达</h1>
+    <p class="hero-sub" id="meta-line">加载中…</p>
+    <div class="hero-stats" id="hero-stats"></div>
+  </header>
+
+  <aside class="filters-panel">
+    <div class="panel-head">
+      <span class="panel-icon">◈</span>
+      <h2>筛选控制台</h2>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">行程类型</label>
+      <div class="trip-tabs" id="trip-tabs">
+        <button type="button" class="tab active" data-trip="all">全部</button>
+        <button type="button" class="tab" data-trip="round_trip">往返</button>
+        <button type="button" class="tab" data-trip="open_jaw">开口程</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">国家 / 地区</label>
+      <div class="chip-grid" id="country-chips"></div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">目的地</label>
+      <div class="chip-grid" id="dest-chips"></div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">价格区间 <span id="price-range-label" class="mono"></span></label>
+      <div class="range-dual">
+        <input type="range" id="price-min" min="0" max="3000" step="50" value="0" />
+        <input type="range" id="price-max" min="0" max="3000" step="50" value="3000" />
+      </div>
+      <div class="price-buckets" id="price-buckets"></div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">出发城市</label>
+      <div class="chip-grid" id="origin-chips"></div>
+    </div>
+
+    <button type="button" class="reset-btn" id="reset-filters">重置筛选</button>
+  </aside>
+
+  <main class="dashboard">
+    <section class="chart-grid">
+      <article class="chart-card chart-card--wide">
+        <header><h3>目的地最低价</h3><span class="chart-hint">横向对比各城市底价</span></header>
+        <div class="chart-wrap"><canvas id="chart-dest-bar"></canvas></div>
+      </article>
+
+      <article class="chart-card">
+        <header><h3>价格分布</h3><span class="chart-hint">命中数量按价格段</span></header>
+        <div class="chart-wrap"><canvas id="chart-price-hist"></canvas></div>
+      </article>
+
+      <article class="chart-card">
+        <header><h3>国家占比</h3><span class="chart-hint">按去程目的地归属</span></header>
+        <div class="chart-wrap chart-wrap--donut"><canvas id="chart-country"></canvas></div>
+      </article>
+
+      <article class="chart-card chart-card--wide">
+        <header><h3>停留天数 × 价格</h3><span class="chart-hint">散点 · 气泡大小=同价条数</span></header>
+        <div class="chart-wrap"><canvas id="chart-scatter"></canvas></div>
+      </article>
+
+      <article class="chart-card chart-card--wide">
+        <header><h3>出发日期热力</h3><span class="chart-hint">各日出票命中数</span></header>
+        <div class="chart-wrap"><canvas id="chart-date"></canvas></div>
+      </article>
+    </section>
+
+    <section class="table-section">
+      <header class="table-head">
+        <div>
+          <h3>航班明细</h3>
+          <span class="table-count" id="table-count">0 条</span>
+        </div>
+        <div class="sort-controls">
+          <label>排序</label>
+          <select id="sort-by">
+            <option value="price-asc">价格 ↑</option>
+            <option value="price-desc">价格 ↓</option>
+            <option value="dest-asc">目的地 A→Z</option>
+            <option value="date-asc">出发日期 ↑</option>
+            <option value="stay-asc">停留天数 ↑</option>
+          </select>
+        </div>
+      </header>
+      <div class="table-wrap">
+        <table id="offers-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>类型</th>
+              <th>路线</th>
+              <th>出发</th>
+              <th>返程</th>
+              <th>停留</th>
+              <th>价格</th>
+              <th>航班详情</th>
+            </tr>
+          </thead>
+          <tbody id="offers-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

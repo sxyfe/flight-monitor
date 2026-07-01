@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>小红书封面 1080×1440</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 1080px;
+        height: 1440px;
+        overflow: hidden;
+        font-family:
+          "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+
+      .cover {
+        width: 1080px;
+        height: 1440px;
+        position: relative;
+        overflow: hidden;
+        background: #ebe6dc;
+      }
+
+      .bg {
+        position: absolute;
+        inset: -48px;
+        background: url("../output/首页.jpg") center / cover no-repeat;
+        filter: blur(14px) brightness(1.05) saturate(1.08);
+        transform: scale(1.1);
+      }
+
+      .bg-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(235, 230, 220, 0.72) 0%,
+          rgba(235, 230, 220, 0.45) 42%,
+          rgba(228, 221, 208, 0.78) 100%
+        );
+      }
+
+      .sparkle {
+        position: absolute;
+        font-size: 36px;
+        z-index: 5;
+        filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.15));
+      }
+
+      .deco-plane {
+        position: absolute;
+        top: 36px;
+        left: 40px;
+        font-size: 72px;
+        z-index: 5;
+        transform: rotate(-18deg);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+      }
+
+      .deco-money {
+        position: absolute;
+        top: 32px;
+        right: 44px;
+        font-size: 76px;
+        z-index: 5;
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+      }
+
+      .content {
+        position: relative;
+        z-index: 2;
+        width: 1080px;
+        height: 1440px;
+        padding: 100px 40px 48px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .title-block {
+        text-align: center;
+        width: 100%;
+        margin-bottom: 16px;
+      }
+
+      .title-line1 {
+        font-size: 68px;
+        font-weight: 900;
+        line-height: 1.12;
+        color: #fdffa7;
+        text-shadow:
+          4px 4px 0 #141210,
+          -4px 4px 0 #141210,
+          4px -4px 0 #141210,
+          -4px -4px 0 #141210,
+          0 6px 0 #141210;
+      }
+
+      .title-line2 {
+        margin-top: 4px;
+        font-size: 82px;
+        font-weight: 900;
+        line-height: 1.05;
+        color: #fff;
+        text-transform: lowercase;
+        text-shadow:
+          5px 5px 0 #141210,
+          -5px 5px 0 #141210,
+          5px -5px 0 #141210,
+          -5px -5px 0 #141210,
+          0 7px 0 #141210;
+      }
+
+      .free-badge {
+        margin: 14px 0 18px;
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        border: 4px solid #141210;
+        border-radius: 999px;
+        padding: 10px 36px;
+        font-size: 38px;
+        font-weight: 900;
+        color: #fff;
+        text-shadow: 2px 2px 0 #141210;
+        box-shadow: 0 6px 0 #141210;
+        letter-spacing: 0.08em;
+      }
+
+      .main-area {
+        position: relative;
+        flex: 1;
+        width: 100%;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .checks {
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        z-index: 4;
+      }
+
+      .check-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .check-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #27ae60;
+        border: 3px solid #141210;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 24px;
+        font-weight: 900;
+        flex-shrink: 0;
+        box-shadow: 0 3px 0 #141210;
+      }
+
+      .check-text {
+        background: #fff;
+        border: 3px solid #141210;
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 22px;
+        font-weight: 900;
+        color: #141210;
+        white-space: nowrap;
+        box-shadow: 0 4px 0 rgba(20, 18, 16, 0.25);
+      }
+
+      .arrow {
+        position: absolute;
+        left: 200px;
+        top: 58%;
+        font-size: 56px;
+        z-index: 4;
+        transform: rotate(25deg);
+        filter: drop-shadow(2px 2px 0 #141210);
+      }
+
+      .card {
+        width: 780px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 5px solid #fff;
+        box-shadow:
+          0 20px 50px rgba(20, 18, 16, 0.28),
+          0 0 0 3px #141210;
+        transform: rotate(-3deg);
+        background: #fffdf8;
+        z-index: 3;
+      }
+
+      .card img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .ide-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 28px;
+        margin: 20px 0 16px;
+        z-index: 5;
+      }
+
+      .ide-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .ide-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 16px;
+        border: 3px solid #141210;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 5px 0 #141210;
+        font-weight: 900;
+        font-size: 28px;
+      }
+
+      .ide-icon.claude {
+        background: linear-gradient(145deg, #e8a88a, #c97b5a);
+        color: #fff;
+        font-size: 36px;
+        border-radius: 50%;
+      }
+
+      .ide-icon.cursor {
+        background: #141210;
+        color: #fff;
+        font-family: ui-monospace, monospace;
+        font-size: 22px;
+      }
+
+      .ide-icon.codex {
+        background: linear-gradient(145deg, #10a37f, #0d8a6a);
+        color: #fff;
+        font-size: 18px;
+        font-family: ui-monospace, monospace;
+      }
+
+      .ide-label {
+        font-size: 18px;
+        font-weight: 900;
+        color: #141210;
+        text-shadow: 1px 1px 0 #fff;
+      }
+
+      .subtitle-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        text-align: center;
+        padding: 0 16px;
+      }
+
+      .subtitle {
+        font-size: 36px;
+        font-weight: 900;
+        line-height: 1.4;
+        color: #fff;
+        text-shadow:
+          3px 3px 0 #141210,
+          -3px 3px 0 #141210,
+          3px -3px 0 #141210,
+          -3px -3px 0 #141210;
+      }
+
+      .sub-sparkle {
+        font-size: 32px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="cover">
+      <div class="bg"></div>
+      <div class="bg-overlay"></div>
+
+      <span class="deco-plane">✈️</span>
+      <span class="deco-money">💰</span>
+      <span class="sparkle" style="top: 180px; left: 320px">✨</span>
+      <span class="sparkle" style="top: 220px; right: 280px">✨</span>
+      <span class="sparkle" style="bottom: 200px; left: 120px">✨</span>
+      <span class="sparkle" style="bottom: 160px; right: 100px">✨</span>
+
+      <div class="content">
+        <div class="title-block">
+          <div class="title-line1">一句话查询机票特价</div>
+          <div class="title-line2">skill</div>
+        </div>
+
+        <div class="free-badge">完全免费</div>
+
+        <div class="main-area">
+          <div class="checks">
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-text">高效穷举</div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-text">智能筛选</div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-text">省钱必备</div>
+            </div>
+          </div>
+
+          <span class="arrow">👉</span>
+
+          <div class="card">
+            <img src="../output/首页.jpg" alt="航班特价分析报告" />
+          </div>
+        </div>
+
+        <div class="ide-row">
+          <div class="ide-item">
+            <div class="ide-icon claude">✳</div>
+            <span class="ide-label">Claude</span>
+          </div>
+          <div class="ide-item">
+            <div class="ide-icon cursor">&lt;/&gt;</div>
+            <span class="ide-label">Cursor</span>
+          </div>
+          <div class="ide-item">
+            <div class="ide-icon codex">{ }</div>
+            <span class="ide-label">Codex</span>
+          </div>
+        </div>
+
+        <div class="subtitle-wrap">
+          <span class="sub-sparkle">✨</span>
+          <p class="subtitle">往返 + 开口程穷举，不再花冤枉钱</p>
+          <span class="sub-sparkle">✨</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

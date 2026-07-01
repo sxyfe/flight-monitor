@@ -1,0 +1,46 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Flight Watch local data
+web/flight-watch/.credentials.local.json
+web/flight-watch/data/
+
+# Python / venv
+__pycache__/
+*.pyc
+**/.venv/
+
+# 本地凭据（双保险）
+**/.credentials.local.json
+.env
+
+# 本地 IDE / 对话历史
+.specstory/
+.cursor/hooks/
+
+# 查价/报告产物
+output/
+scripts/exhaustive_results.json
+scripts/exhaustive_results_snapshot_*.json

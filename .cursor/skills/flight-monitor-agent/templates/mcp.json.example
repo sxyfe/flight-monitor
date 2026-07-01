@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "RollingGo-Flight": {
+      "url": "https://mcp.rollinggo.cn/mcp/flight",
+      "type": "streamable-http",
+      "headers": {
+        "Authorization": "Bearer mcp_your_key_here",
+        "Accept": "application/json, text/event-stream"
+      }
+    }
+  }
+}

@@ -1,0 +1,233 @@
+{
+  "presets": [
+    {
+      "id": "delta-pvg-lax-nrt-27spring-d0214",
+      "name": "达美开口 · 上海→洛杉矶 / 洛杉矶→东京 · 春节（返程2/14）",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "LAX", "date": "2027-02-04"},
+        {"from_city": "LAX", "to_city": "NRT", "date": "2027-02-14"}
+      ],
+      "reference_price": 3451,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 3624, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2027-02-20"},
+      "sales_region": "CN",
+      "currency": "CNY",
+      "notes": "Trip.nl 多段同票参考价"
+    },
+    {
+      "id": "delta-pvg-lax-nrt-27spring-d0216",
+      "name": "达美开口 · 上海→洛杉矶 / 洛杉矶→东京 · 春节（返程2/16）",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "LAX", "date": "2027-02-04"},
+        {"from_city": "LAX", "to_city": "NRT", "date": "2027-02-16"}
+      ],
+      "reference_price": 3451,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 3624, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2027-02-20"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-sea-nrt-27spring",
+      "name": "达美开口 · 上海→西雅图 / 西雅图→东京 · 春节",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "SEA", "date": "2027-02-05"},
+        {"from_city": "SEA", "to_city": "NRT", "date": "2027-02-16"}
+      ],
+      "reference_price": 3686,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 3870, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2027-02-20"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-las-nrt-27spring",
+      "name": "达美开口 · 上海→拉斯维加斯 / 拉斯维加斯→东京 · 春节",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "LAS", "date": "2027-02-04"},
+        {"from_city": "LAS", "to_city": "NRT", "date": "2027-02-14"}
+      ],
+      "reference_price": 3713,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 3899, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2027-02-20"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-las-nrt-26golden",
+      "name": "达美开口 · 上海→拉斯维加斯 / 拉斯维加斯→东京 · 中秋国庆",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "LAS", "date": "2026-09-23"},
+        {"from_city": "LAS", "to_city": "NRT", "date": "2026-10-06"}
+      ],
+      "reference_price": 4401,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 4621, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2026-10-10"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-aus-nrt-27spring-d0212",
+      "name": "达美开口 · 上海→奥斯汀 / 奥斯汀→东京 · 春节（返程2/12）",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "AUS", "date": "2027-02-04"},
+        {"from_city": "AUS", "to_city": "NRT", "date": "2027-02-12"}
+      ],
+      "reference_price": 3648,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 3830, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2027-02-20"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-aus-nrt-27spring-d0215",
+      "name": "达美开口 · 上海→奥斯汀 / 奥斯汀→东京 · 春节（返程2/15）",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "AUS", "date": "2027-02-04"},
+        {"from_city": "AUS", "to_city": "NRT", "date": "2027-02-15"}
+      ],
+      "reference_price": 3648,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 3830, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2027-02-20"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-bzn-nrt-27spring",
+      "name": "达美开口 · 上海→博兹曼 / 博兹曼→东京 · 春节",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "BZN", "date": "2027-02-04"},
+        {"from_city": "BZN", "to_city": "NRT", "date": "2027-02-12"}
+      ],
+      "reference_price": 3963,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 4161, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2027-02-20"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-hnl-nrt-26golden",
+      "name": "达美开口 · 上海→檀香山 / 檀香山→东京 · 中秋国庆",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "HNL", "date": "2026-09-23"},
+        {"from_city": "HNL", "to_city": "NRT", "date": "2026-10-06"}
+      ],
+      "reference_price": 3810,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 4001, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2026-10-13"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-boi-nrt-27spring",
+      "name": "达美开口 · 上海→博伊西 / 博伊西→东京 · 春节",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "BOI", "date": "2027-02-04"},
+        {"from_city": "BOI", "to_city": "NRT", "date": "2027-02-15"}
+      ],
+      "reference_price": 4001,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 4201, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2027-02-20"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-atl-nrt-27spring",
+      "name": "达美开口 · 上海→亚特兰大 / 亚特兰大→东京 · 春节",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "ATL", "date": "2027-02-01"},
+        {"from_city": "ATL", "to_city": "NRT", "date": "2027-02-15"}
+      ],
+      "reference_price": 4471,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 4695, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2027-02-20"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-pvg-atl-nrt-26golden",
+      "name": "达美开口 · 上海→亚特兰大 / 亚特兰大→东京 · 中秋国庆",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "PVG", "to_city": "ATL", "date": "2026-09-26"},
+        {"from_city": "ATL", "to_city": "NRT", "date": "2026-10-08"}
+      ],
+      "reference_price": 4709,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 4944, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2026-10-10"},
+      "sales_region": "CN",
+      "currency": "CNY"
+    },
+    {
+      "id": "delta-hkg-sfo-nrt-26golden",
+      "name": "达美开口 · 香港→旧金山 / 旧金山→东京 · 国庆",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "HKG", "to_city": "SFO", "date": "2026-09-28"},
+        {"from_city": "SFO", "to_city": "NRT", "date": "2026-10-08"}
+      ],
+      "reference_price": 3790,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 3980, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2026-10-10"},
+      "sales_region": "CN",
+      "currency": "CNY",
+      "notes": "离境税可退，文章为退税后参考价"
+    },
+    {
+      "id": "delta-hkg-mco-nrt-26golden",
+      "name": "达美开口 · 香港→奥兰多 / 奥兰多→东京 · 国庆",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "HKG", "to_city": "MCO", "date": "2026-09-30"},
+        {"from_city": "MCO", "to_city": "NRT", "date": "2026-10-07"}
+      ],
+      "reference_price": 4190,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 4400, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2026-10-10"},
+      "sales_region": "CN",
+      "currency": "CNY",
+      "notes": "离境税可退，文章为退税后参考价"
+    },
+    {
+      "id": "delta-hkg-iah-nrt-26golden",
+      "name": "达美开口 · 香港→休斯敦 / 休斯敦→东京 · 国庆",
+      "trip_mode": "open_jaw",
+      "legs": [
+        {"from_city": "HKG", "to_city": "IAH", "date": "2026-09-28"},
+        {"from_city": "IAH", "to_city": "NRT", "date": "2026-10-06"}
+      ],
+      "reference_price": 4309,
+      "filters": {"carriers": ["DL"], "cabin": "ECONOMY"},
+      "alerts": {"max_price": 4524, "drop_abs": 200, "drop_pct": 5, "cooldown_hours": 24},
+      "schedule": {"interval_hours": 12, "active_until": "2026-10-10"},
+      "sales_region": "CN",
+      "currency": "CNY",
+      "notes": "离境税可退，文章为退税后参考价"
+    }
+  ]
+}
