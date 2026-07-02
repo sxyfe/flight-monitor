@@ -526,7 +526,13 @@ def estimate_matrix_query_count(intent: MatrixSearchIntent) -> int:
     pairs = matrix_valid_date_pairs(intent)
     if not origins or not dests or not pairs:
         return 0
-    return len(origins) * len(dests) * len(pairs)
+    out_days = {out.isoformat() for out, _ in pairs}
+    ret_days = {ret.isoformat() for _, ret in pairs}
+    route_count = len(origins) * len(dests)
+    rt_count = route_count * len(pairs)
+    ow_out_count = route_count * len(out_days)
+    ow_ret_count = route_count * len(ret_days)
+    return rt_count + ow_out_count + ow_ret_count
 
 
 def build_matrix_meta(intent: MatrixSearchIntent, offers: list[dict[str, Any]]) -> dict[str, Any]:
@@ -1159,6 +1165,140 @@ def search(
     )
 
 
+def _build_matrix_offer(
+    intent: MatrixSearchIntent,
+    origin: str,
+    dest: str,
+    out: str,
+    ret: str,
+    rt_best: dict[str, Any] | None,
+    ow_out_price: float | None,
+    ow_ret_price: float | None,
+    ow_out_detail: list[dict[str, str]] | None,
+    ow_ret_detail: list[dict[str, str]] | None,
+) -> dict[str, Any] | None:
+    """取往返联票与去程+返程单程最低价，构建矩阵单元报价。"""
+    candidates: list[tuple[str, float, dict[str, Any] | None]] = []
+    if rt_best is not None:
+        candidates.append(("rt", rt_best["totalAdultPrice"], rt_best))
+    if ow_out_price is not None and ow_ret_price is not None:
+        candidates.append(("ow", ow_out_price + ow_ret_price, None))
+    if not candidates:
+        return None
+
+    kind, price, rt_data = min(candidates, key=lambda x: x[1])
+    sd = stay_days(date.fromisoformat(out), date.fromisoformat(ret))
+    origin_name = _matrix_label(origin, intent.origin_labels, ORIGINS)
+    dest_name = _matrix_label(dest, intent.dest_labels, DESTINATIONS)
+    out_detail = ow_out_detail or []
+    ret_detail = ow_ret_detail or []
+    sum_out = " | ".join(f"{s['flight']} {s['from']}→{s['to']} {s['dep']}" for s in out_detail)
+    sum_ret = " | ".join(f"{s['flight']} {s['from']}→{s['to']} {s['dep']}" for s in ret_detail)
+
+    if kind == "rt" and rt_data is not None:
+        return {
+            "id": _offer_id(),
+            "trip_type": "round_trip",
+            "price": price,
+            "currency": rt_data.get("currency", "CNY"),
+            "origin": origin,
+            "origin_name": origin_name,
+            "dest": dest,
+            "dest_name": dest_name,
+            "out_dest": dest,
+            "out_dest_name": dest_name,
+            "ret_dest": dest,
+            "ret_dest_name": dest_name,
+            "route": f"{origin_name} ⇄ {dest_name}",
+            "ret_origin": origin,
+            "ret_origin_name": origin_name,
+            "out_date": out,
+            "ret_date": ret,
+            "stay_days": sd,
+            "bookable": True,
+            "segments_out": seg_list(rt_data.get("fromSegments", [])),
+            "segments_ret": seg_list(rt_data.get("retSegments", [])),
+            "summary_out": fmt_seg(rt_data.get("fromSegments", [])),
+            "summary_ret": fmt_seg(rt_data.get("retSegments", [])),
+            "detail": "去: "
+            + fmt_seg(rt_data.get("fromSegments", []))
+            + " | 回: "
+            + fmt_seg(rt_data.get("retSegments", [])),
+            "price_out": price,
+            "price_ret": None,
+        }
+
+    return {
+        "id": _offer_id(),
+        "trip_type": "round_trip",
+        "price": price,
+        "currency": "CNY",
+        "origin": origin,
+        "origin_name": origin_name,
+        "dest": dest,
+        "dest_name": dest_name,
+        "out_dest": dest,
+        "out_dest_name": dest_name,
+        "ret_dest": dest,
+        "ret_dest_name": dest_name,
+        "route": f"{origin_name} ⇄ {dest_name}",
+        "ret_origin": origin,
+        "ret_origin_name": origin_name,
+        "out_date": out,
+        "ret_date": ret,
+        "stay_days": sd,
+        "bookable": False,
+        "segments_out": out_detail,
+        "segments_ret": ret_detail,
+        "summary_out": sum_out,
+        "summary_ret": sum_ret,
+        "detail": f"去 ¥{ow_out_price}: {sum_out} | 回 ¥{ow_ret_price}: {sum_ret}",
+        "price_out": ow_out_price,
+        "price_ret": ow_ret_price,
+    }
+
+
+def _matrix_process_response(
+    result_kind: str,
+    result_task: Any,
+    data: dict[str, Any],
+    *,
+    rt_cache: dict[tuple[str, str, str, str], dict[str, Any] | None],
+    ow_out_cache: dict[tuple[str, str, str], float],
+    ow_ret_cache: dict[tuple[str, str, str], float],
+    ow_out_detail: dict[tuple[str, str, str], list[dict[str, str]]],
+    ow_ret_detail: dict[tuple[str, str, str], list[dict[str, str]]],
+) -> tuple[bool, str]:
+    """处理单次查价响应，写入缓存。返回 (is_api_failure, failure_message)。"""
+    if "error" in data:
+        if result_kind == "rt":
+            rt_cache[result_task] = None
+        return False, ""
+    if flight_response_failed(data):
+        if result_kind == "rt":
+            rt_cache[result_task] = None
+        return True, flight_response_message(data)
+    best = _cheapest(data)
+    if result_kind == "rt":
+        rt_cache[result_task] = best
+    elif result_kind == "out" and best:
+        ow_out_cache[result_task] = best["totalAdultPrice"]
+        ow_out_detail[result_task] = seg_list(best.get("fromSegments", []))
+    elif result_kind == "ret" and best:
+        ow_ret_cache[result_task] = best["totalAdultPrice"]
+        ow_ret_detail[result_task] = seg_list(best.get("fromSegments", []))
+    return False, ""
+
+
+def _dedupe_matrix_offers(offers: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    best: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    for o in offers:
+        key = (o["origin"], o["dest"], o["out_date"], o["ret_date"])
+        if key not in best or o["price"] < best[key]["price"]:
+            best[key] = o
+    return sorted(best.values(), key=lambda x: x["price"])
+
+
 def search_matrix(
     client: RollingGoClient,
     intent: MatrixSearchIntent,
@@ -1172,19 +1312,33 @@ def search_matrix(
     origins = _resolve_matrix_codes(intent.origins)
     dests = _resolve_matrix_codes(intent.destinations)
     pairs = matrix_valid_date_pairs(intent)
+    out_days = sorted({out.isoformat() for out, _ in pairs})
+    ret_days = sorted({ret.isoformat() for _, ret in pairs})
 
     rt_tasks: list[tuple[str, str, str, str]] = []
+    ow_out_tasks: list[tuple[str, str, str]] = []
+    ow_ret_tasks: list[tuple[str, str, str]] = []
     for origin in origins:
         for dest in dests:
             for out, ret in pairs:
                 rt_tasks.append((origin, dest, out.isoformat(), ret.isoformat()))
+            for out_d in out_days:
+                ow_out_tasks.append((origin, dest, out_d))
+            for ret_d in ret_days:
+                ow_ret_tasks.append((dest, origin, ret_d))
 
-    total = len(rt_tasks)
+    total = len(rt_tasks) + len(ow_out_tasks) + len(ow_ret_tasks)
     done = 0
     errors = 0
     api_failures = 0
     api_failure_message = ""
     offers: list[dict[str, Any]] = []
+    emitted_best: dict[tuple[str, str, str, str], float] = {}
+    rt_cache: dict[tuple[str, str, str, str], dict[str, Any] | None] = {}
+    ow_out_cache: dict[tuple[str, str, str], float] = {}
+    ow_ret_cache: dict[tuple[str, str, str], float] = {}
+    ow_out_detail: dict[tuple[str, str, str], list[dict[str, str]]] = {}
+    ow_ret_detail: dict[tuple[str, str, str], list[dict[str, str]]] = {}
 
     def emit_offer(offer: dict[str, Any]) -> None:
         if on_offer:
@@ -1196,15 +1350,54 @@ def search_matrix(
         if on_progress:
             on_progress(done, total)
 
+    def maybe_emit(task: tuple[str, str, str, str], offer: dict[str, Any] | None) -> None:
+        if not offer:
+            return
+        prev = emitted_best.get(task)
+        if prev is not None and offer["price"] >= prev:
+            return
+        offers.append(offer)
+        emitted_best[task] = offer["price"]
+        emit_offer(offer)
+
     def run_rt(task: tuple[str, str, str, str]):
         origin, dest, out, ret = task
         return (
+            "rt",
             task,
             client.search_flights(
                 origin, dest, out, "ROUND_TRIP", ret, intent.adults, intent.children, intent.cabin
             ),
         )
 
+    def run_ow(task: tuple[str, str, str], kind: str):
+        frm, to, d = task
+        return (
+            kind,
+            task,
+            client.search_flights(frm, to, d, "ONE_WAY", None, intent.adults, intent.children, intent.cabin),
+        )
+
+    def handle_response(result_kind: str, result_task: Any, data: dict[str, Any]) -> None:
+        nonlocal api_failures, api_failure_message, errors
+        if "error" in data:
+            errors += 1
+        failed, msg = _matrix_process_response(
+            result_kind,
+            result_task,
+            data,
+            rt_cache=rt_cache,
+            ow_out_cache=ow_out_cache,
+            ow_ret_cache=ow_ret_cache,
+            ow_out_detail=ow_out_detail,
+            ow_ret_detail=ow_ret_detail,
+        )
+        if failed:
+            api_failures += 1
+            if msg and not api_failure_message:
+                api_failure_message = msg
+
+    # 阶段 1：往返联票（优先，命中即推送，避免长时间 0 命中）
     with ThreadPoolExecutor(max_workers=CONCURRENCY) as ex:
         futures = {ex.submit(run_rt, t): t for t in rt_tasks}
         for fut in as_completed(futures):
@@ -1214,71 +1407,78 @@ def search_matrix(
                 break
             task = futures[fut]
             try:
-                result_task, data = fut.result()
+                result_kind, result_task, data = fut.result()
             except Exception:
                 errors += 1
+                rt_cache[task] = None
                 tick()
                 continue
             tick()
-            if "error" in data:
-                errors += 1
-                continue
-            if flight_response_failed(data):
-                api_failures += 1
-                if not api_failure_message:
-                    api_failure_message = flight_response_message(data)
-                continue
-            best = _cheapest(data)
-            if not best:
-                continue
-            price = best["totalAdultPrice"]
-            origin, dest, out, ret = result_task
-            sd = stay_days(date.fromisoformat(out), date.fromisoformat(ret))
-            origin_name = _matrix_label(origin, intent.origin_labels, ORIGINS)
-            dest_name = _matrix_label(dest, intent.dest_labels, DESTINATIONS)
-            offer = {
-                "id": _offer_id(),
-                "trip_type": "round_trip",
-                "price": price,
-                "currency": best.get("currency", "CNY"),
-                "origin": origin,
-                "origin_name": origin_name,
-                "dest": dest,
-                "dest_name": dest_name,
-                "out_dest": dest,
-                "out_dest_name": dest_name,
-                "ret_dest": dest,
-                "ret_dest_name": dest_name,
-                "route": f"{origin_name} ⇄ {dest_name}",
-                "ret_origin": origin,
-                "ret_origin_name": origin_name,
-                "out_date": out,
-                "ret_date": ret,
-                "stay_days": sd,
-                "bookable": True,
-                "segments_out": seg_list(best.get("fromSegments", [])),
-                "segments_ret": seg_list(best.get("retSegments", [])),
-                "summary_out": fmt_seg(best.get("fromSegments", [])),
-                "summary_ret": fmt_seg(best.get("retSegments", [])),
-                "detail": "去: "
-                + fmt_seg(best.get("fromSegments", []))
-                + " | 回: "
-                + fmt_seg(best.get("retSegments", [])),
-                "price_out": price,
-                "price_ret": None,
-            }
-            offers.append(offer)
-            emit_offer(offer)
+            handle_response(result_kind, result_task, data)
+            rt_best = rt_cache.get(task)
+            if rt_best:
+                origin, dest, out, ret = task
+                maybe_emit(
+                    task,
+                    _build_matrix_offer(
+                        intent, origin, dest, out, ret, rt_best, None, None, None, None
+                    ),
+                )
 
-    offers.sort(key=lambda x: x["price"])
+    cancelled = bool(should_cancel and should_cancel())
+
+    # 阶段 2：单程补查（联票未命中或需对比最低价时才真正用到）
+    if not cancelled:
+        ow_jobs: list[tuple[str, tuple[str, str, str]]] = [
+            ("out", t) for t in ow_out_tasks
+        ] + [("ret", t) for t in ow_ret_tasks]
+        with ThreadPoolExecutor(max_workers=CONCURRENCY) as ex:
+            futures = {
+                ex.submit(run_ow, task, kind): (kind, task) for kind, task in ow_jobs
+            }
+            for fut in as_completed(futures):
+                if should_cancel and should_cancel():
+                    for pending in futures:
+                        pending.cancel()
+                    break
+                kind, task = futures[fut]
+                try:
+                    result_kind, result_task, data = fut.result()
+                except Exception:
+                    errors += 1
+                    tick()
+                    continue
+                tick()
+                handle_response(result_kind, result_task, data)
+
+    # 阶段 3：联票 vs 单程相加取最低，补全空格子
+    for origin, dest, out, ret in rt_tasks:
+        task = (origin, dest, out, ret)
+        offer = _build_matrix_offer(
+            intent,
+            origin,
+            dest,
+            out,
+            ret,
+            rt_cache.get(task),
+            ow_out_cache.get((origin, dest, out)),
+            ow_ret_cache.get((dest, origin, ret)),
+            ow_out_detail.get((origin, dest, out)),
+            ow_ret_detail.get((dest, origin, ret)),
+        )
+        maybe_emit(task, offer)
+
+    offers = _dedupe_matrix_offers(offers)
     duration_ms = int((time.time() - t0) * 1000)
+    rt_offer_count = sum(1 for o in offers if o.get("bookable"))
+    ow_offer_count = len(offers) - rt_offer_count
     stats = SearchStats(
         total_queries=total,
         errors=errors,
         api_failures=api_failures,
         api_failure_message=api_failure_message,
-        rt_count=len(offers),
-        oj_count=0,
+        rt_count=rt_offer_count,
+        oj_count=ow_offer_count,
         duration_ms=duration_ms,
     )
     finalize_pricing_status(stats, len(offers), done)
@@ -1294,7 +1494,7 @@ def search_matrix(
         aggregations=aggregate(offers),
         stats=stats,
         meta=meta,
-        ow_cache_built=False,
+        ow_cache_built=True,
     )
 
 

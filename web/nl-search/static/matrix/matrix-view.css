@@ -94,20 +94,32 @@
 
 .matrix-card-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
-@media (max-width: 960px) {
-  .matrix-card-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.matrix-card-grid[data-size="sm"] .matrix-grid-table {
+  font-size: 0.8rem;
 }
 
-@media (max-width: 600px) {
-  .matrix-card-grid {
-    grid-template-columns: 1fr;
-  }
+.matrix-card-grid[data-size="md"] .matrix-grid-table {
+  font-size: 0.76rem;
+}
+
+.matrix-card-grid[data-size="lg"] .matrix-grid-table {
+  font-size: 0.72rem;
+}
+
+.matrix-card-grid[data-size="xl"] .matrix-grid-table {
+  font-size: 0.68rem;
+}
+
+.matrix-card-grid[data-size="md"] .matrix-grid-table td.matrix-cell {
+  padding: 5px 6px;
+}
+
+.matrix-card-grid[data-size="lg"] .matrix-grid-table td.matrix-cell,
+.matrix-card-grid[data-size="xl"] .matrix-grid-table td.matrix-cell {
+  padding: 4px 5px;
 }
 
 .matrix-card {
@@ -140,17 +152,33 @@
 
 .matrix-grid-table {
   border-collapse: collapse;
-  font-size: 0.68rem;
+  font-size: 0.8rem;
+  width: max-content;
   min-width: 100%;
+  table-layout: auto;
 }
 
 .matrix-grid-table th,
 .matrix-grid-table td {
   border: 1px solid rgba(26, 26, 26, 0.08);
-  padding: 4px 5px;
+  padding: 6px 8px;
   text-align: center;
   white-space: nowrap;
-  min-width: 42px;
+}
+
+.matrix-grid-table .matrix-corner {
+  min-width: 44px;
+  width: 44px;
+}
+
+.matrix-grid-table .matrix-date-head {
+  min-width: 44px;
+  padding: 6px 10px;
+  overflow: visible;
+  text-overflow: clip;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .matrix-grid-table thead th {
@@ -158,17 +186,22 @@
   top: 0;
   background: #f7f4ed;
   z-index: 1;
-  font-weight: 600;
-  color: var(--muted);
 }
 
-.matrix-grid-table tbody th {
+.matrix-grid-table tbody th.matrix-date-head {
   position: sticky;
   left: 0;
   background: #f7f4ed;
-  z-index: 1;
-  font-weight: 600;
-  color: var(--muted);
+  z-index: 2;
+}
+
+.matrix-grid-table thead th.matrix-date-head {
+  z-index: 3;
+}
+
+.matrix-grid-table td.matrix-cell {
+  min-width: 46px;
+  font-variant-numeric: tabular-nums;
 }
 
 .matrix-cell {
@@ -233,6 +266,14 @@
 
 .matrix-form .ui-date-range {
   max-width: 100%;
+}
+
+.matrix-form .ui-date-input {
+  cursor: pointer;
+}
+
+.matrix-form .ui-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
 }
 
 @media (max-width: 640px) {

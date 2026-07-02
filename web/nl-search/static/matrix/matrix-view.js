@@ -156,14 +156,16 @@
       ? `最佳 ¥${Math.round(bestOffer.price).toLocaleString()} | ${formatShortDate(bestOffer.out_date)} / ${formatShortDate(bestOffer.ret_date)}`
       : "暂无命中";
 
-    let table = `<table class="matrix-grid-table"><thead><tr><th></th>`;
+    const dateColMin = 44;
+    const tableMinW = dateColMin + retDays.length * dateColMin;
+    let table = `<table class="matrix-grid-table" style="min-width:${tableMinW}px"><thead><tr><th class="matrix-corner"></th>`;
     retDays.forEach((d) => {
-      table += `<th>${formatShortDate(d)}</th>`;
+      table += `<th class="matrix-date-head">${formatShortDate(d)}</th>`;
     });
     table += "</tr></thead><tbody>";
 
     outDays.forEach((outD) => {
-      table += `<tr><th>${formatShortDate(outD)}</th>`;
+      table += `<tr><th class="matrix-date-head">${formatShortDate(outD)}</th>`;
       retDays.forEach((retD) => {
         const pk = pairKey(outD, retD);
         const offer = pairMap[pk];
@@ -182,13 +184,82 @@
     table += "</tbody></table>";
 
     return `
-      <article class="matrix-card" data-route="${routeKey(route.origin, route.dest)}">
+      <article class="matrix-card" data-route="${routeKey(route.origin, route.dest)}" data-cols="${retDays.length}" data-rows="${outDays.length}">
         <div class="matrix-card-head">
           ${routeLabel(route)}
           <div class="matrix-card-best">${headerBest}</div>
         </div>
         <div class="matrix-scroll">${table}</div>
       </article>`;
+  }
+
+  const DATE_COL_MIN_PX = 44;
+  const ROW_HEAD_MIN_PX = 44;
+
+  function matrixSizeTier(outCount, retCount) {
+    const maxDim = Math.max(outCount, retCount);
+    if (maxDim > 12) return "xl";
+    if (maxDim > 8) return "lg";
+    if (maxDim > 5) return "md";
+    return "sm";
+  }
+
+  function estimateCardMinWidth(colCount, sizeTier) {
+    const priceW = { sm: 56, md: 52, lg: 48, xl: 46 }[sizeTier] || 52;
+    const colW = Math.max(DATE_COL_MIN_PX, priceW);
+    return ROW_HEAD_MIN_PX + colCount * colW + 28;
+  }
+
+  function applyAdaptiveLayout(root, routes, outDays, retDays) {
+    const grid = root.querySelector(".matrix-card-grid");
+    if (!grid) return;
+
+    const colCount = retDays.length;
+    const rowCount = outDays.length;
+    const sizeTier = matrixSizeTier(rowCount, colCount);
+    grid.dataset.size = sizeTier;
+
+    const containerW = root.getBoundingClientRect().width || window.innerWidth - 48;
+    const estMinCard = estimateCardMinWidth(colCount, sizeTier);
+    const routeCount = Math.max(1, routes.length);
+    const maxDim = Math.max(rowCount, colCount);
+
+    let cardCols = 1;
+    if (maxDim <= 8 && estMinCard * 2 <= containerW * 0.96) {
+      cardCols = Math.min(routeCount, 2);
+    }
+    if (maxDim <= 5 && estMinCard * 3 <= containerW * 0.98) {
+      cardCols = Math.min(routeCount, 3);
+    }
+    if (sizeTier === "lg" || sizeTier === "xl" || estMinCard > containerW * 0.92) {
+      cardCols = 1;
+    }
+    if (window.matchMedia("(max-width: 720px)").matches) cardCols = 1;
+
+    grid.style.gridTemplateColumns = `repeat(${cardCols}, minmax(${Math.min(estMinCard, containerW)}px, 1fr))`;
+  }
+
+  let layoutObserver = null;
+  let layoutResizeHandler = null;
+
+  function bindAdaptiveLayout(root, routes, outDays, retDays) {
+    const run = () => applyAdaptiveLayout(root, routes, outDays, retDays);
+    run();
+    if (layoutObserver) {
+      layoutObserver.disconnect();
+      layoutObserver = null;
+    }
+    if (layoutResizeHandler) {
+      window.removeEventListener("resize", layoutResizeHandler);
+      layoutResizeHandler = null;
+    }
+    if (typeof ResizeObserver !== "undefined") {
+      layoutObserver = new ResizeObserver(run);
+      layoutObserver.observe(root);
+    } else {
+      layoutResizeHandler = run;
+      window.addEventListener("resize", layoutResizeHandler, { passive: true });
+    }
   }
 
   function bindCellTooltips(root, offers) {
@@ -296,6 +367,7 @@
       </div>`;
 
     bindCellTooltips(root, offers);
+    bindAdaptiveLayout(root, routes, outDays, retDays);
   }
 
   window.MatrixView = {

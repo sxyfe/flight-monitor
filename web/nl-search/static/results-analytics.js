@@ -14,7 +14,12 @@
   }
 
   function formatOfferTooltipLines(o) {
-    const type = o.trip_type === "open_jaw" ? "开口程" : "往返";
+    const type =
+      o.trip_type === "open_jaw"
+        ? "开口程"
+        : o.bookable === false
+          ? "往返(分段价)"
+          : "往返";
     const lines = [`[${type}] ${formatRouteLabel(o)} · ¥${o.price}`];
     lines.push(`去程 ${o.out_date} · 回程 ${o.ret_date || "-"} · 停留 ${o.stay_days}天`);
     const detail = o.detail || "";

@@ -58,7 +58,18 @@
         const msgType = ref("");
         const minDate = todayStr();
 
-        return { form, validation, msg, msgType, minDate };
+        function openDatePicker(e) {
+          const el = e.currentTarget;
+          if (typeof el.showPicker === "function") {
+            try {
+              el.showPicker();
+            } catch (_) {
+              /* 已展开或不支持时忽略 */
+            }
+          }
+        }
+
+        return { form, validation, msg, msgType, minDate, openDatePicker };
       },
       template: `
         <div class="matrix-form">
@@ -86,11 +97,11 @@
           <div class="form-row-compact matrix-dates">
             <div class="ui-field">
               <span class="ui-label">去程日期</span>
-              <input class="ui-input" type="date" v-model="form.outDate" :min="minDate" aria-label="去程日期（窗口起始）" />
+              <input class="ui-input ui-date-input" type="date" v-model="form.outDate" :min="minDate" aria-label="去程日期（窗口起始）" @click="openDatePicker" />
             </div>
             <div class="ui-field">
               <span class="ui-label">返程日期</span>
-              <input class="ui-input" type="date" v-model="form.retDate" :min="form.outDate || minDate" aria-label="返程日期（窗口结束）" />
+              <input class="ui-input ui-date-input" type="date" v-model="form.retDate" :min="form.outDate || minDate" aria-label="返程日期（窗口结束）" @click="openDatePicker" />
             </div>
           </div>
           <p v-if="msg" class="ui-msg" :class="'ui-msg-' + (msgType || 'ok')">{{ msg }}</p>
