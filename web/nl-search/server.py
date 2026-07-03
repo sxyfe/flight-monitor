@@ -39,10 +39,16 @@ HOST = os.environ.get("NL_SEARCH_HOST", "127.0.0.1")
 PORT = int(os.environ.get("NL_SEARCH_PORT", "8765"))
 CREDENTIALS_FILE = Path(__file__).parent / ".credentials.local.json"
 
+_cors_raw = os.environ.get("ALLOWED_ORIGINS", "").strip()
+if _cors_raw:
+    _cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
+else:
+    _cors_origins = [f"http://{HOST}:{PORT}", "http://127.0.0.1:8765"]
+
 app = FastAPI(title="NL Flight Search", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[f"http://{HOST}:{PORT}", "http://127.0.0.1:8765"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -118,6 +124,21 @@ def _load_credentials():
             _config = AppConfig(**data)
         except Exception:
             pass
+    env_rg_key = os.environ.get("ROLLINGGO_API_KEY", "").strip()
+    if env_rg_key:
+        _config.rollinggo.api_key = env_rg_key
+    env_rg_base = os.environ.get("ROLLINGGO_BASE_URL", "").strip()
+    if env_rg_base:
+        _config.rollinggo.base_url = env_rg_base
+    env_llm_key = os.environ.get("LLM_API_KEY", "").strip()
+    if env_llm_key:
+        _config.llm.api_key = env_llm_key
+    env_llm_base = os.environ.get("LLM_BASE_URL", "").strip()
+    if env_llm_base:
+        _config.llm.base_url = env_llm_base
+    env_llm_model = os.environ.get("LLM_MODEL", "").strip()
+    if env_llm_model:
+        _config.llm.model = env_llm_model
     if not _config.rollinggo.api_key:
         mcp = Path.home() / ".cursor/mcp.json"
         if mcp.exists():

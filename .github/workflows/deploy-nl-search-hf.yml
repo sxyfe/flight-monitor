@@ -1,0 +1,60 @@
+name: Deploy nl-search to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/nl-search/**"
+      - "scripts/**"
+      - ".cursor/skills/flight-monitor-agent/scripts/**"
+      - "deploy/nl-search/**"
+      - ".github/workflows/deploy-nl-search-hf.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HF_SPACE: sxyfe/nl-flight-search
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Hugging Face bundle
+        run: |
+          set -euo pipefail
+          rm -rf hf-space
+          mkdir -p hf-space/web hf-space/.cursor/skills/flight-monitor-agent
+          cp deploy/nl-search/Dockerfile hf-space/Dockerfile
+          cp deploy/nl-search/README.md hf-space/README.md
+          cp -r scripts hf-space/scripts
+          cp -r web/nl-search hf-space/web/nl-search
+          cp -r .cursor/skills/flight-monitor-agent/scripts hf-space/.cursor/skills/flight-monitor-agent/scripts
+          rm -rf hf-space/web/nl-search/.venv hf-space/web/nl-search/__pycache__
+
+      - name: Ensure Hugging Face Space exists
+        run: |
+          pip install -q huggingface_hub
+          python3 - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          api.create_repo(
+              os.environ["HF_SPACE"],
+              repo_type="space",
+              space_sdk="docker",
+              exist_ok=True,
+          )
+          PY
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ env.HF_SPACE }}
+
+      - name: Push to Hugging Face Space
+        uses: huggingface/huggingface_hub@v0.36.0
+        with:
+          huggingface_token: ${{ secrets.HF_TOKEN }}
+          huggingface_repo: ${{ env.HF_SPACE }}
+          repo_type: space
+          operation: upload-folder
+          folder_path: hf-space
