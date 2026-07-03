@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "web/exhaustive-viz/**"
+      - "deploy/**"
       - ".github/workflows/deploy-exhaustive-viz.yml"
   workflow_dispatch:
 
