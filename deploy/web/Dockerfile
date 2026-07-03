@@ -14,9 +14,10 @@ COPY web/gateway /app/web/gateway
 COPY .cursor/skills/flight-monitor-agent/scripts /app/.cursor/skills/flight-monitor-agent/scripts
 
 RUN if [ -L /app/web/exhaustive-viz/data.json ]; then \
-      target="$(readlink -f /app/web/exhaustive-viz/data.json)"; \
+      target="$(python3 -c \"import os; print(os.path.realpath('/app/web/exhaustive-viz/data.json'))\")"; \
       rm /app/web/exhaustive-viz/data.json; \
-      cp "$target" /app/web/exhaustive-viz/data.json; \
+      if [ -f "$target" ]; then cp "$target" /app/web/exhaustive-viz/data.json; \
+      else printf '%s\n' '{"rt_hits":[],"oj_hits":[],"destinations_by_country":{},"meta":{}}' > /app/web/exhaustive-viz/data.json; fi; \
     fi
 
 RUN pip install --no-cache-dir -r /app/web/nl-search/requirements.txt
