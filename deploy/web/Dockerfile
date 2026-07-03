@@ -10,6 +10,7 @@ WORKDIR /app
 COPY scripts /app/scripts
 COPY web/nl-search /app/web/nl-search
 COPY web/exhaustive-viz /app/web/exhaustive-viz
+COPY web/landing /app/web/landing
 COPY web/gateway /app/web/gateway
 COPY .cursor/skills/flight-monitor-agent/scripts /app/.cursor/skills/flight-monitor-agent/scripts
 

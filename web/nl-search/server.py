@@ -202,7 +202,9 @@ async def index():
     if 'name="web-base"' not in html:
         html = html.replace("<head>", f"<head>\n    {inject}", 1)
     viz_nav = (
-        '<a href="/" class="btn btn-ghost" style="text-decoration:none">穷举雷达</a>'
+        '<a href="/" class="btn btn-ghost" style="text-decoration:none">首页</a>'
+        '<a href="/viz/" class="btn btn-ghost" style="text-decoration:none">雷达</a>'
+        '<a href="/skill/" class="btn btn-ghost" style="text-decoration:none">Cursor Skill</a>'
         if WEB_ROOT
         else ""
     )

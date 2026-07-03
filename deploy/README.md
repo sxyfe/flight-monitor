@@ -4,8 +4,10 @@
 
 | 路径 | 功能 |
 |------|------|
-| `/` | 穷举特价可视化（exhaustive-viz） |
+| `/` | Flight Monitor 官网落地页 |
 | `/nl-search/` | 自然语言查价（nl-search，含 API / SSE） |
+| `/viz/` | 穷举特价可视化（exhaustive-viz） |
+| `/skill/` | Cursor Skill（flight-monitor-agent）介绍与安装 |
 
 > **说明**：GitHub Pages **只能托管静态文件**，无法在 `github.io` 上运行查价 API。  
 > 若要 **完整功能 + 同一域名**，请使用下方 **Render / Docker** 方案。  
@@ -29,8 +31,10 @@
 ```bash
 docker build -f deploy/web/Dockerfile -t flight-monitor-web .
 docker run -p 7860:7860 -e ROLLINGGO_API_KEY=你的Key flight-monitor-web
-# 穷举雷达 http://127.0.0.1:7860/
+# 穷举雷达 http://127.0.0.1:7860/viz/
 # 查价     http://127.0.0.1:7860/nl-search/
+# 官网     http://127.0.0.1:7860/
+# Skill    http://127.0.0.1:7860/skill/
 ```
 
 ---

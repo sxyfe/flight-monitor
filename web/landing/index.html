@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Flight Monitor — 自然语言 + 穷举引擎，扫全球特价机票。在线查价、穷举雷达、Cursor Skill。" />
+  <title>Flight Monitor · 特价航班查价与穷举</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+  <div class="mesh" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="./">Flight <span>Monitor</span></a>
+    <nav class="site-nav" aria-label="主导航">
+      <a href="./" class="active">首页</a>
+      <a href="nl-search/">在线查价</a>
+      <a href="viz/">穷举雷达</a>
+      <a href="skill/">Cursor Skill</a>
+      <a href="nl-search/" class="nav-cta">开始查价</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <p class="tag">RollingGo · 实时查价</p>
+    <h1 class="hero-title">不猜日期，<br />扫组合找特价。</h1>
+    <p class="hero-lead">
+      Flight Monitor 把<strong>自然语言意图</strong>变成结构化搜索，用穷举引擎覆盖多城、多日期、开口程与往返联票——在线 Web 工具与 Cursor Skill 同源能力，同一套暖色分析报告。
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="nl-search/">开始在线查价</a>
+      <a class="btn btn-secondary" href="viz/">打开穷举雷达</a>
+    </div>
+
+    <div class="product-grid">
+      <article class="product-card">
+        <p class="card-tag">WEB · 主产品</p>
+        <h2 class="card-title">自然语言查价</h2>
+        <p class="card-desc">
+          中文描述出发地、目的地与日期窗（如「国庆前后东南亚」），支持表单编辑、价格矩阵与精简/全量穷举。结果区含 Chart.js 图表、侧栏筛选与分页列表。
+        </p>
+        <a class="card-link" href="nl-search/">进入 nl-search →</a>
+      </article>
+      <article class="product-card dark">
+        <p class="card-tag">VIZ · 数据视图</p>
+        <h2 class="card-title">穷举特价雷达</h2>
+        <p class="card-desc">
+          多维筛选控制台：国家、目的地、价格区间、行程类型。目的地低价榜、价格分布、停留天数散点与出发日期热力——一眼看清穷举命中格局。
+        </p>
+        <a class="card-link" href="viz/">进入雷达 →</a>
+      </article>
+      <article class="product-card">
+        <p class="card-tag">CURSOR · 开发者</p>
+        <h2 class="card-title">flight-monitor-agent</h2>
+        <p class="card-desc">
+          在 Cursor 里用自然语言查价，输出暖色 HTML 分页报告。精简模式日常扫价，全量穷举深度挖掘。纯查价 Skill，不含桌面监控。
+        </p>
+        <a class="card-link" href="skill/">安装与说明 →</a>
+      </article>
+    </div>
+
+    <h2 class="section-title">三步完成一次查价</h2>
+    <div class="steps">
+      <div class="step">
+        <p class="step-num">01</p>
+        <h3>说意图</h3>
+        <p>自然语言或表单：多出发地、多国目的地、停留天数、开口程/往返。</p>
+      </div>
+      <div class="step">
+        <p class="step-num">02</p>
+        <h3>选模式</h3>
+        <p>精简模式快速扫热门城市；全量穷举覆盖配置内全部组合。</p>
+      </div>
+      <div class="step">
+        <p class="step-num">03</p>
+        <h3>看报告</h3>
+        <p>暖色报告：图表联动、筛选侧栏、航班号/日期/价格明细。</p>
+      </div>
+    </div>
+
+    <h2 class="section-title">核心能力</h2>
+    <ul class="feature-list">
+      <li>往返联票 + 开口程（去程 A→B、返程 C→D，出发/返回均在出发地集合内）</li>
+      <li>「国庆」→ 10-01~10-07；「国庆前后」→ 9-28~10-10 等规则解析</li>
+      <li>机场中文搜索 + 城市/机场编码选择，路线优先中文城市名</li>
+      <li>RollingGo 实时查价；HTTP 200 但业务失败时明确提示「查价服务异常」</li>
+    </ul>
+
+    <p class="note">
+      查价需自备 <a href="https://rollinggo.store/" target="_blank" rel="noopener">RollingGo API Key</a>（Web 在设置页配置，Skill 写入 <code>.env</code>）。展示价为成人含税合计参考价，无 OTA 跳转。
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      Flight Monitor ·
+      <a href="https://github.com/sxyfe/flight-monitor" target="_blank" rel="noopener">GitHub</a> ·
+      <a href="https://rollinggo.store/" target="_blank" rel="noopener">RollingGo</a> ·
+      <a href="https://www.xiaohongshu.com/user/profile/6236bc560000000021025eba" target="_blank" rel="noopener">寻屿 · 小红书</a>
+    </p>
+  </footer>
+</body>
+</html>

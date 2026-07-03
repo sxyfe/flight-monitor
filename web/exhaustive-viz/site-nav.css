@@ -1,0 +1,46 @@
+/* Flight Monitor 站点顶栏 — 雷达页轻量适配暗色背景 */
+.fm-site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  background: rgba(8, 12, 18, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0, 255, 200, 0.12);
+}
+
+.fm-brand {
+  font-family: "Outfit", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #e8eef2;
+  text-decoration: none;
+}
+
+.fm-brand span {
+  color: #00ffc8;
+}
+
+.fm-site-nav {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.fm-site-nav a {
+  font-size: 0.82rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  color: rgba(232, 238, 242, 0.65);
+  text-decoration: none;
+}
+
+.fm-site-nav a:hover,
+.fm-site-nav a.active {
+  color: #00ffc8;
+  background: rgba(0, 255, 200, 0.08);
+}

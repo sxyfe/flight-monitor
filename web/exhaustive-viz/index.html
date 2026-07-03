@@ -9,16 +9,27 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="site-nav.css" />
 </head>
 <body>
   <div class="scanlines" aria-hidden="true"></div>
   <div class="grain" aria-hidden="true"></div>
 
+  <header class="fm-site-header">
+    <a class="fm-brand" href="../">Flight <span>Monitor</span></a>
+    <nav class="fm-site-nav" aria-label="站点导航">
+      <a href="../">首页</a>
+      <a href="../nl-search/">在线查价</a>
+      <a href="../viz/" class="active">穷举雷达</a>
+      <a href="../skill/">Cursor Skill</a>
+    </nav>
+  </header>
+
   <header class="hero">
     <div class="hero-badge">EXHAUSTIVE SCAN</div>
     <h1>特价航班雷达</h1>
     <p class="hero-sub" id="meta-line">加载中…</p>
-    <p class="hero-nav"><a href="nl-search/">→ 自然语言查价</a></p>
+    <p class="hero-nav"><a href="../nl-search/">→ 自然语言查价</a></p>
     <div class="hero-stats" id="hero-stats"></div>
   </header>
 
