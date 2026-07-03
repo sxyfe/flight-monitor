@@ -1,0 +1,26 @@
+name: Deploy web to Render
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "scripts/**"
+      - "deploy/web/**"
+      - "render.yaml"
+      - ".github/workflows/deploy-web-render.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
+        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+      - name: Skip (no RENDER_DEPLOY_HOOK)
+        if: ${{ secrets.RENDER_DEPLOY_HOOK == '' }}
+        run: |
+          echo "::notice::未配置 RENDER_DEPLOY_HOOK，跳过 Render 部署。"
+          echo "请在 Render 创建 Web Service（Blueprint: render.yaml）后，将 Deploy Hook URL 写入 GitHub Secrets。"

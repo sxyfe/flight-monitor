@@ -120,7 +120,7 @@
         vm.msgType = "";
         const intent = formToIntent(vm.form);
         try {
-          const res = await fetch("/api/matrix/validate", {
+          const res = await fetch(window.apiUrl("/api/matrix/validate"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ intent }),

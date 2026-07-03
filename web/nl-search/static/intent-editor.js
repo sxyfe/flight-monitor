@@ -114,7 +114,9 @@
           for (const c of form.countries || []) {
             try {
               const res = await fetch(
-                `/api/country/${encodeURIComponent(c)}/airports?mode=exhaustive`
+                window.apiUrl(
+                  `/api/country/${encodeURIComponent(c)}/airports?mode=exhaustive`
+                )
               );
               if (res.ok) {
                 const data = await res.json();
@@ -204,7 +206,7 @@
           reparseLoading.value = true;
           msg.value = "";
           try {
-            const res = await fetch("/api/intent/parse", {
+            const res = await fetch(window.apiUrl("/api/intent/parse"), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ query: q }),
@@ -254,7 +256,7 @@
 
           let data;
           try {
-            const res = await fetch("/api/intent/validate", {
+            const res = await fetch(window.apiUrl("/api/intent/validate"), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ intent }),

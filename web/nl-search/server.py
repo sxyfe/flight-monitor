@@ -14,7 +14,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -37,7 +37,15 @@ from nl_parser import parse_query  # noqa: E402
 
 HOST = os.environ.get("NL_SEARCH_HOST", "127.0.0.1")
 PORT = int(os.environ.get("NL_SEARCH_PORT", "8765"))
+WEB_ROOT = os.environ.get("WEB_ROOT", "").rstrip("/")
 CREDENTIALS_FILE = Path(__file__).parent / ".credentials.local.json"
+
+
+def _api_path(path: str) -> str:
+    """子路径部署时 stream_url 等需带 WEB_ROOT 前缀。"""
+    if not path.startswith("/"):
+        path = f"/{path}"
+    return f"{WEB_ROOT}{path}" if WEB_ROOT else path
 
 _cors_raw = os.environ.get("ALLOWED_ORIGINS", "").strip()
 if _cors_raw:
@@ -189,7 +197,17 @@ def _optional_rollinggo_client() -> RollingGoClient | None:
 
 @app.get("/")
 async def index():
-    return FileResponse(STATIC_DIR / "index.html")
+    html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    inject = f'<meta name="web-base" content="{WEB_ROOT}" />'
+    if 'name="web-base"' not in html:
+        html = html.replace("<head>", f"<head>\n    {inject}", 1)
+    viz_nav = (
+        '<a href="/" class="btn btn-ghost" style="text-decoration:none">穷举雷达</a>'
+        if WEB_ROOT
+        else ""
+    )
+    html = html.replace("<!-- VIZ_NAV -->", viz_nav)
+    return HTMLResponse(html)
 
 
 @app.get("/api/config")
@@ -523,7 +541,7 @@ async def start_search(req: SearchRequest):
         return {
             "search_id": search_id,
             "status": "running",
-            "stream_url": f"/api/search/{search_id}/stream",
+            "stream_url": _api_path(f"/api/search/{search_id}/stream"),
             "search_type": "matrix",
         }
 
@@ -546,7 +564,11 @@ async def start_search(req: SearchRequest):
         }
     thread = threading.Thread(target=_run_search, args=(search_id, intent, mode), daemon=True)
     thread.start()
-    return {"search_id": search_id, "status": "running", "stream_url": f"/api/search/{search_id}/stream"}
+    return {
+        "search_id": search_id,
+        "status": "running",
+        "stream_url": _api_path(f"/api/search/{search_id}/stream"),
+    }
 
 
 @app.post("/api/search/{search_id}/cancel")

@@ -100,6 +100,21 @@ body {
   color: var(--text-dim);
 }
 
+.hero-nav {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.hero-nav a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 255, 200, 0.35);
+}
+
+.hero-nav a:hover {
+  opacity: 0.85;
+}
+
 .hero-stats {
   display: flex;
   flex-wrap: wrap;

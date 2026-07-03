@@ -1,0 +1,19 @@
+# Flight Monitor Web — 同一域名统一部署（exhaustive-viz + nl-search）
+# 文档：https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: flight-monitor-web
+    runtime: docker
+    dockerfilePath: ./deploy/web/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: WEB_ROOT
+        value: /nl-search
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      # 在 Render Dashboard 中配置（勿提交密钥）：
+      # ROLLINGGO_API_KEY、LLM_API_KEY、LLM_BASE_URL、LLM_MODEL

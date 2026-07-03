@@ -47,7 +47,8 @@
     }
 
     async function api(path, opts = {}) {
-        const res = await fetch(path, {
+        const url = typeof window.apiUrl === "function" ? window.apiUrl(path) : path;
+        const res = await fetch(url, {
             headers: { "Content-Type": "application/json" },
             ...opts,
         });
@@ -392,7 +393,9 @@
     function startSearchStream(r, est, kind) {
         currentSearchId = r.search_id;
         currentSearchKind = kind;
-        const es = new EventSource(r.stream_url);
+        const es = new EventSource(
+            typeof window.apiUrl === "function" ? window.apiUrl(r.stream_url) : r.stream_url
+        );
         currentEventSource = es;
         es.addEventListener("progress", (e) => {
             const p = JSON.parse(e.data);

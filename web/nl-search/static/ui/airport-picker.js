@@ -42,7 +42,7 @@
         }
         timer = setTimeout(() => {
           loading.value = true;
-          fetch(`/api/airport/search?q=${encodeURIComponent(q.trim())}`)
+          fetch(window.apiUrl(`/api/airport/search?q=${encodeURIComponent(q.trim())}`))
             .then(async (r) => {
               const d = await r.json().catch(() => ({}));
               if (!r.ok || d.error) {
