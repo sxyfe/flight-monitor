@@ -4,10 +4,14 @@ services:
   - type: web
     name: flight-monitor-web
     runtime: docker
+    repo: https://github.com/sxyfe/flight-monitor
+    branch: main
     dockerfilePath: ./deploy/web/Dockerfile
     dockerContext: .
     plan: free
+    region: singapore
     healthCheckPath: /
+    autoDeploy: true
     envVars:
       - key: WEB_ROOT
         value: /nl-search
@@ -15,5 +19,11 @@ services:
         value: "*"
       - key: PYTHONUNBUFFERED
         value: "1"
-      # 在 Render Dashboard 中配置（勿提交密钥）：
-      # ROLLINGGO_API_KEY、LLM_API_KEY、LLM_BASE_URL、LLM_MODEL
+      - key: ROLLINGGO_API_KEY
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_BASE_URL
+        sync: false
+      - key: LLM_MODEL
+        sync: false
