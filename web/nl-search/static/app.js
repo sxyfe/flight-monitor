@@ -205,12 +205,27 @@
     $("tabForm").onclick = () => switchQueryTab("form");
     $("tabMatrix").onclick = () => switchQueryTab("matrix");
 
+    function updateVizLink(searchId) {
+        const btn = $("btnOpenViz");
+        if (!btn) return;
+        if (!searchId || currentSearchKind === "matrix") {
+            btn.classList.add("hidden");
+            return;
+        }
+        const prefix = location.pathname.includes("/nl-search")
+            ? location.pathname.replace(/\/nl-search\/?.*$/, "")
+            : "";
+        btn.href = `${prefix}/viz/?search_id=${encodeURIComponent(searchId)}`;
+        btn.classList.remove("hidden");
+    }
+
     function finishSearch(data, cancelled = false) {
         if (currentSearchKind === "matrix") {
             finishMatrixSearch(data, cancelled);
             return;
         }
         showResults(data, true);
+        updateVizLink(currentSearchId);
         const pricingMsg = pricingServiceMessage(data);
         if (pricingMsg) {
             setSearchStatus(pricingMsg, "err");

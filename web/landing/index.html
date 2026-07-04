@@ -20,6 +20,7 @@
       <a href="./" class="active">首页</a>
       <a href="nl-search/">在线查价</a>
       <a href="flight-watch/">监控</a>
+      <a href="viz/">穷举雷达</a>
       <a href="skill/">Cursor Skill</a>
       <a href="nl-search/" class="nav-cta">开始查价</a>
     </nav>
@@ -56,7 +57,7 @@
         <p class="card-tag">VIZ · 数据视图</p>
         <h2 class="card-title">穷举特价雷达</h2>
         <p class="card-desc">
-          多维筛选控制台：国家、目的地、价格区间、行程类型。目的地低价榜、价格分布、停留天数散点与出发日期热力——一眼看清穷举命中格局。
+          多维筛选控制台：国家、目的地、价格区间、行程类型。支持读取在线查价结果（search_id 联动）或静态穷举快照。
         </p>
         <a class="card-link" href="viz/">进入雷达 →</a>
       </article>
@@ -111,7 +112,8 @@
       <li>往返联票 + 开口程（去程 A→B、返程 C→D，出发/返回均在出发地集合内）</li>
       <li>「国庆」→ 10-01~10-07；「国庆前后」→ 9-28~10-10 等规则解析</li>
       <li>机场中文搜索 + 城市/机场编码选择，路线优先中文城市名</li>
-      <li>RollingGo 实时查价；HTTP 200 但业务失败时明确提示「查价服务异常」</li>
+      <li>查价完成后可一键跳转<strong>穷举雷达</strong>多维可视化（与 nl-search 实时联动）</li>
+      <li>Flight Watch 支持飞书 + 微信 PushPlus 降价通知，达美开口 15 条预设一键导入</li>
     </ul>
 
     <p class="note">

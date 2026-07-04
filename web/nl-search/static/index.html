@@ -270,6 +270,25 @@
             gap: 20px;
         }
         
+        .results-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .results-toolbar-label {
+            font-size: 0.88rem;
+            color: var(--teal);
+            font-weight: 600;
+        }
+        #btnOpenViz {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        
         @media (max-width: 768px) {
             .grid2 {
                 grid-template-columns: 1fr;
@@ -601,6 +620,10 @@
         </section>
 
         <section class="card hidden" id="resultsSection">
+          <div class="results-toolbar">
+            <span class="results-toolbar-label">穷举报告</span>
+            <a class="btn btn-ghost btn-sm hidden" id="btnOpenViz" href="#" target="_blank" rel="noopener">雷达可视化 →</a>
+          </div>
           <div class="nl-report" id="reportRoot">
             <header class="hero">
               <div class="hero-badge">FLIGHT REPORT</div>

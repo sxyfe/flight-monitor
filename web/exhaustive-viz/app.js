@@ -524,13 +524,32 @@ function bindEvents() {
   });
 }
 
+async function loadVizData() {
+  const params = new URLSearchParams(location.search);
+  const searchId = params.get("search_id");
+  if (searchId) {
+    const apiBase = (() => {
+      const m = location.pathname.match(/^(.*\/viz)\/?/);
+      const prefix = m ? m[1].replace(/\/viz$/, "") : "";
+      return `${prefix}/nl-search`;
+    })();
+    const res = await fetch(`${apiBase}/api/search/${encodeURIComponent(searchId)}/viz-bundle`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "无法加载在线查价结果，请返回 nl-search 重新搜索");
+    }
+    return res.json();
+  }
+  const res = await fetch("data.json");
+  if (!res.ok) throw new Error("无法加载 data.json，请通过本地服务器访问，或使用 ?search_id= 联动在线查价");
+  return res.json();
+}
+
 async function init() {
   chartDefaults();
-  const res = await fetch("data.json");
-  if (!res.ok) throw new Error("无法加载 data.json，请通过本地服务器访问");
-  state.raw = await res.json();
+  state.raw = await loadVizData();
 
-  const maps = buildDestMaps(state.raw.destinations_by_country);
+  const maps = buildDestMaps(state.raw.destinations_by_country || {});
   state.destMap = maps.destMap;
   state.countryMap = maps.countryMap;
 
@@ -539,6 +558,15 @@ async function init() {
     ...(state.raw.rt_hits || []).map((o) => normalizeOffer(o, idx++)),
     ...(state.raw.oj_hits || []).map((o) => normalizeOffer(o, idx++)),
   ];
+
+  const metaEl = document.getElementById("meta-line");
+  const hintEl = document.getElementById("viz-source-hint");
+  if (state.raw.meta?.source === "nl-search") {
+    metaEl.textContent = `在线查价联动 · ${state.offers.length} 条命中`;
+    if (hintEl) hintEl.textContent = "本次查价结果（实时）";
+  } else if (hintEl) {
+    hintEl.textContent = "静态穷举快照 data.json";
+  }
 
   renderHeroStats();
   setupFilters();

@@ -514,6 +514,19 @@ tbody tr:hover { background: rgba(13, 110, 110, 0.04); }
   margin-top: 1.25rem;
 }
 
+@media (max-width: 640px) {
+  .nl-report .hero h1 { font-size: 1.15rem; }
+  .nl-report .hero-sub { font-size: 0.82rem; }
+  .nl-report .filters-panel { padding: 12px; }
+  .nl-report .filter-label { font-size: 0.72rem; }
+  .nl-report .offers-table { font-size: 0.72rem; }
+  .nl-report .offers-table th,
+  .nl-report .offers-table td { padding: 6px 4px; }
+  .nl-report .chart-wrap { min-height: 200px; }
+  .nl-report .hero-stats { gap: 8px; }
+  .nl-report .stat-card { min-width: calc(50% - 8px); padding: 8px 10px; }
+}
+
 @media (max-width: 1100px) {
   .nl-report {
     grid-template-columns: 1fr;

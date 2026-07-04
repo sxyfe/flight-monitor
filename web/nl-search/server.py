@@ -34,6 +34,7 @@ from flight_search_engine import (  # noqa: E402
     validate_matrix_intent,
 )
 from nl_parser import parse_query  # noqa: E402
+from viz_export import offers_to_viz_bundle  # noqa: E402
 
 HOST = os.environ.get("NL_SEARCH_HOST", "127.0.0.1")
 PORT = int(os.environ.get("NL_SEARCH_PORT", "8765"))
@@ -586,6 +587,23 @@ async def get_search(search_id: str):
     if not st:
         raise HTTPException(404, "search not found")
     return st
+
+
+@app.get("/api/search/{search_id}/viz-bundle")
+async def get_search_viz_bundle(search_id: str):
+    st = _searches.get(search_id)
+    if not st:
+        raise HTTPException(404, "search not found")
+    if st.get("search_type") == "matrix":
+        raise HTTPException(400, "矩阵搜索请使用报告视图，暂不支持雷达导出")
+    offers = st.get("offers") or []
+    if not offers:
+        raise HTTPException(404, "该搜索暂无命中，无法生成雷达数据")
+    return offers_to_viz_bundle(
+        offers,
+        meta=st.get("meta") or {},
+        search_id=search_id,
+    )
 
 
 @app.get("/api/search/{search_id}/stream")
