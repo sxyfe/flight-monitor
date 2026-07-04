@@ -13,6 +13,8 @@ COPY web/flight-watch /app/web/flight-watch
 COPY web/exhaustive-viz /app/web/exhaustive-viz
 COPY web/landing /app/web/landing
 COPY web/gateway /app/web/gateway
+COPY web/shared /app/web/shared
+COPY web/billing /app/web/billing
 COPY .cursor/skills/flight-monitor-agent/scripts /app/.cursor/skills/flight-monitor-agent/scripts
 
 RUN python3 <<'PY'
@@ -36,7 +38,8 @@ if p.is_symlink():
 PY
 
 RUN pip install --no-cache-dir -r /app/web/nl-search/requirements.txt \
-    && pip install --no-cache-dir -r /app/web/flight-watch/requirements.txt
+    && pip install --no-cache-dir -r /app/web/flight-watch/requirements.txt \
+    && pip install --no-cache-dir -r /app/web/billing/requirements.txt
 
 ENV PYTHONPATH=/app
 ENV WEB_ROOT=/nl-search

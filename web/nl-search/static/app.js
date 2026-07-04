@@ -49,6 +49,7 @@
     async function api(path, opts = {}) {
         const url = typeof window.apiUrl === "function" ? window.apiUrl(path) : path;
         const res = await fetch(url, {
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             ...opts,
         });
@@ -200,6 +201,7 @@
             navWatch: href("/flight-watch/"),
             navViz: href("/viz/"),
             navSkill: href("/skill/"),
+            navBilling: href("/billing/"),
             navNlSearch: href("/nl-search/"),
         };
         Object.entries(links).forEach(([id, url]) => {
@@ -207,7 +209,32 @@
             if (el) el.href = url;
         });
     }
+
+    async function renderEntitlements() {
+        const row = $("entitlementsRow");
+        if (!row) return;
+        try {
+            const ent = await api("/api/entitlements");
+            if (!ent.billing_enabled || ent.unlimited) {
+                row.classList.add("hidden");
+                return;
+            }
+            row.classList.remove("hidden");
+            const href = typeof window.siteHref === "function" ? window.siteHref("/billing/") : "/billing/";
+            if (!ent.authenticated || !ent.plan) {
+                row.innerHTML = `会员：未登录 · <a href="${href}">注册免费试用</a>`;
+                return;
+            }
+            const usage = ent.search_usage_today ?? 0;
+            const limit = ent.search_queries_per_day ?? "—";
+            row.innerHTML = `会员：<strong>${ent.plan_name || ent.plan}</strong> · 今日 ${usage}/${limit} 次 · <a href="${href}">升级</a>`;
+        } catch (_) {
+            row.classList.add("hidden");
+        }
+    }
+
     initSiteNav();
+    renderEntitlements();
 
     $("btnMatrixBack")?.addEventListener("click", () => {
         $("matrixResultsSection")?.classList.add("hidden");
@@ -375,6 +402,10 @@
         const err = normalizeApiError(e);
         if (!err || (!err.message && !err.detail && !err.code)) return "搜索失败";
         if (typeof err.message === "string") return err.message;
+        if (err.code === "LOGIN_REQUIRED" || err.code === "SUBSCRIPTION_REQUIRED" || err.code === "QUOTA_EXCEEDED") {
+            const up = err.upgrade_url || (typeof window.siteHref === "function" ? window.siteHref("/billing/") : "/billing/");
+            return `${err.message || "需要会员"}（订阅：${up}）`;
+        }
         if (typeof err.detail === "string") return err.detail;
         if (err.detail && typeof err.detail.message === "string") return err.detail.message;
         try {

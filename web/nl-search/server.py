@@ -12,7 +12,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -20,6 +20,14 @@ from pydantic import BaseModel, Field
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "web" / "shared"))
+
+from subscription_gate import (  # noqa: E402
+    check_search_allowed,
+    get_entitlements,
+    get_user_from_request,
+    record_search_usage,
+)
 
 from flight_search_engine import (  # noqa: E402
     MatrixSearchIntent,
@@ -510,10 +518,17 @@ def _run_matrix_search(search_id: str, intent: MatrixSearchIntent):
             state["error"] = str(e)
 
 
+@app.get("/api/entitlements")
+async def api_entitlements(request: Request):
+    uid = get_user_from_request(request)
+    return get_entitlements(uid)
+
+
 @app.post("/api/search")
-async def start_search(req: SearchRequest):
+async def start_search(req: SearchRequest, request: Request):
     _rollinggo_client()
     search_type = req.search_type if req.search_type in ("standard", "matrix") else "standard"
+    user_id = get_user_from_request(request)
 
     if search_type == "matrix":
         intent = MatrixSearchIntent.from_dict(req.intent)
@@ -521,6 +536,14 @@ async def start_search(req: SearchRequest):
         if not validation.valid:
             raise HTTPException(400, {"code": "INVALID_INTENT", "validation": validation.__dict__})
         est = validation.estimated_queries_smart
+        gate = check_search_allowed(
+            user_id, mode="smart", search_type="matrix", estimated_queries=est
+        )
+        if not gate.allowed:
+            raise HTTPException(
+                402,
+                {"code": gate.code, "message": gate.message, "upgrade_url": gate.upgrade_url},
+            )
         search_id = f"srch_{uuid.uuid4().hex[:12]}"
         with _search_lock:
             _searches[search_id] = {
@@ -534,6 +557,7 @@ async def start_search(req: SearchRequest):
             target=_run_matrix_search, args=(search_id, intent), daemon=True
         )
         thread.start()
+        record_search_usage(user_id, 1)
         return {
             "search_id": search_id,
             "status": "running",
@@ -548,6 +572,14 @@ async def start_search(req: SearchRequest):
         raise HTTPException(400, {"code": "INVALID_INTENT", "validation": validation.__dict__})
     mode = req.mode if req.mode in ("smart", "exhaustive") else "smart"
     est = validation.estimated_queries_exhaustive if mode == "exhaustive" else validation.estimated_queries_smart
+    gate = check_search_allowed(
+        user_id, mode=mode, search_type="standard", estimated_queries=est
+    )
+    if not gate.allowed:
+        raise HTTPException(
+            402,
+            {"code": gate.code, "message": gate.message, "upgrade_url": gate.upgrade_url},
+        )
     search_id = f"srch_{uuid.uuid4().hex[:12]}"
     with _search_lock:
         _searches[search_id] = {
@@ -560,6 +592,7 @@ async def start_search(req: SearchRequest):
         }
     thread = threading.Thread(target=_run_search, args=(search_id, intent, mode), daemon=True)
     thread.start()
+    record_search_usage(user_id, 1)
     return {
         "search_id": search_id,
         "status": "running",

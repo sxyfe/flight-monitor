@@ -82,6 +82,14 @@ def init_db(path: Path | None = None) -> None:
             );
             """
         )
+        _migrate_user_id(conn)
+
+
+def _migrate_user_id(conn: sqlite3.Connection) -> None:
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(watches)").fetchall()}
+    if "user_id" not in cols:
+        conn.execute("ALTER TABLE watches ADD COLUMN user_id TEXT")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_watches_user ON watches(user_id)")
 
 
 @contextmanager
@@ -95,10 +103,30 @@ def _connect(path: Path | None = None) -> Iterator[sqlite3.Connection]:
         conn.close()
 
 
-def list_watches() -> list[Watch]:
+def list_watches(user_id: str | None = None) -> list[Watch]:
     with _connect() as conn:
-        rows = conn.execute("SELECT * FROM watches ORDER BY updated_at DESC").fetchall()
+        if user_id:
+            rows = conn.execute(
+                "SELECT * FROM watches WHERE user_id = ? ORDER BY updated_at DESC",
+                (user_id,),
+            ).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM watches ORDER BY updated_at DESC").fetchall()
     return [Watch.from_row(dict(r)) for r in rows]
+
+
+def count_enabled_watches(user_id: str | None = None) -> int:
+    with _connect() as conn:
+        if user_id:
+            row = conn.execute(
+                "SELECT COUNT(*) AS c FROM watches WHERE enabled = 1 AND user_id = ?",
+                (user_id,),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                "SELECT COUNT(*) AS c FROM watches WHERE enabled = 1"
+            ).fetchone()
+    return int(row["c"]) if row else 0
 
 
 def get_watch(watch_id: str) -> Watch | None:
@@ -120,8 +148,9 @@ def create_watch(data: dict[str, Any]) -> Watch:
             INSERT INTO watches (
               id, name, enabled, trip_mode, legs_json, return_date, pricing_mode,
               sales_region, currency, filters_json, alerts_json, schedule_json,
-              reference_price, notes, failure_count, failure_reason, created_at, updated_at
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,NULL,?,?)
+              reference_price, notes, failure_count, failure_reason, created_at, updated_at,
+              user_id
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,NULL,?,?,?)
             """,
             (
                 watch_id,
@@ -140,6 +169,7 @@ def create_watch(data: dict[str, Any]) -> Watch:
                 data.get("notes"),
                 now,
                 now,
+                data.get("user_id"),
             ),
         )
     w = get_watch(watch_id)

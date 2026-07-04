@@ -81,6 +81,18 @@
             font-weight: 600;
         }
 
+        .entitlements-row {
+            font-size: 0.78rem;
+            color: var(--muted);
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: rgba(188, 108, 37, 0.08);
+            max-width: 280px;
+        }
+
+        .entitlements-row a { color: var(--teal); }
+        .entitlements-row strong { color: var(--coral); }
+
         .config-status-row {
             display: flex;
             flex-wrap: wrap;
@@ -492,8 +504,10 @@
                 <a href="#" id="navWatch">监控</a>
                 <a href="#" id="navViz">雷达</a>
                 <a href="#" id="navSkill">Skill</a>
+                <a href="#" id="navBilling">会员</a>
                 <a href="#" id="navNlSearch" class="active">查价</a>
             </nav>
+            <div id="entitlementsRow" class="entitlements-row hidden"></div>
             <button class="btn btn-ghost" id="btnSettings">API 设置</button>
         </div>
     </header>

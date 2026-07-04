@@ -1,4 +1,4 @@
-"""Flight Monitor 统一 Web 网关：官网 + exhaustive-viz + nl-search + flight-watch。"""
+"""Flight Monitor 统一 Web 网关：官网 + exhaustive-viz + nl-search + flight-watch + billing。"""
 from __future__ import annotations
 
 import importlib.util
@@ -30,8 +30,9 @@ def _load_subapp(module_name: str, app_dir: Path):
 
 nl_app = _load_subapp("nl_search_server", WEB / "nl-search")
 fw_app = _load_subapp("flight_watch_server", WEB / "flight-watch")
+billing_app = _load_subapp("billing_server", WEB / "billing")
 
-app = FastAPI(title="Flight Monitor Web", version="1.0.0")
+app = FastAPI(title="Flight Monitor Web", version="1.1.0")
 LANDING_DIR = WEB / "landing"
 VIZ_DIR = WEB / "exhaustive-viz"
 SKILL_DIR = LANDING_DIR / "skill"
@@ -57,6 +58,12 @@ async def flight_watch_redirect():
     return RedirectResponse("/flight-watch/", status_code=302)
 
 
+@app.get("/billing")
+async def billing_redirect():
+    return RedirectResponse("/billing/", status_code=302)
+
+
+app.mount("/billing", billing_app)
 app.mount("/nl-search", nl_app)
 app.mount("/flight-watch", fw_app)
 app.mount("/viz", StaticFiles(directory=VIZ_DIR, html=True), name="viz")

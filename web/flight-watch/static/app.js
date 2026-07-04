@@ -115,11 +115,23 @@ createApp({
 
     async function api(path, opts = {}) {
       const res = await fetch(`${API_BASE}${path}`, {
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         ...opts,
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.detail || data.message || res.statusText);
+      if (!res.ok) {
+        const detail = data.detail;
+        const msg =
+          typeof detail === "object" && detail?.message
+            ? detail.message
+            : typeof detail === "string"
+              ? detail
+              : data.message || res.statusText;
+        const err = new Error(msg);
+        err.code = typeof detail === "object" ? detail.code : undefined;
+        throw err;
+      }
       return data;
     }
 
@@ -425,6 +437,7 @@ createApp({
         <a :href="siteHref('/')">首页</a>
         <a :href="siteHref('/nl-search/')">查价</a>
         <a :href="siteHref('/viz/')">雷达</a>
+        <a :href="siteHref('/billing/')">会员</a>
         <span class="header-nav-active">监控</span>
       </nav>
       <span class="muted">Web · 飞书/微信通知</span>

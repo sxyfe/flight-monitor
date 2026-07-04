@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>会员订阅 · Flight Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="static/billing.css" />
+</head>
+<body>
+  <div class="mesh" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="../">Flight <span>Monitor</span></a>
+    <nav class="site-nav">
+      <a href="../">首页</a>
+      <a href="../nl-search/">查价</a>
+      <a href="../flight-watch/">监控</a>
+      <a href="../viz/">雷达</a>
+      <a href="./" class="active">会员</a>
+    </nav>
+    <div class="auth-area" id="authArea">
+      <button type="button" class="btn btn-ghost" id="btnLogin">登录</button>
+      <button type="button" class="btn btn-primary" id="btnRegister">注册试用</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <p class="tag">订阅 · 支持 Stripe 支付</p>
+    <h1 class="hero-title">选适合你的<br />查价与监控方案</h1>
+    <p class="hero-lead">注册即享 <strong>7 天免费试用</strong>。付费套餐解锁全量穷举、更多监控条数与更高日配额。未配置 Stripe 时本地为 Mock 支付（开发模式）。</p>
+
+    <div id="accountBanner" class="account-banner hidden"></div>
+    <div id="toast" class="toast hidden"></div>
+
+    <section class="plans-grid" id="plansGrid"></section>
+
+    <section class="faq">
+      <h2>常见问题</h2>
+      <dl>
+        <dt>免费试用包含什么？</dt>
+        <dd>7 天内每日 30 次搜索、1 条监控、价格矩阵；不含全量穷举。</dd>
+        <dt>如何支付？</dt>
+        <dd>生产环境接入 Stripe（支持信用卡/部分本地方式）。配置 <code>STRIPE_SECRET_KEY</code> 后生效；否则点击购买将走 Mock 即时开通。</dd>
+        <dt>月度/年度如何续费？</dt>
+        <dd>Stripe 订阅自动续费；可在账户页取消，当前周期内仍可使用。</dd>
+        <dt>永久会员会过期吗？</dt>
+        <dd>不会。一次付费长期享有对应配额（公平使用策略保留）。</dd>
+      </dl>
+    </section>
+  </main>
+
+  <dialog id="authDialog" class="auth-dialog">
+    <form method="dialog" id="authForm">
+      <h3 id="authTitle">登录</h3>
+      <label>邮箱<input type="email" id="authEmail" required autocomplete="email" /></label>
+      <label>密码<input type="password" id="authPassword" required minlength="6" autocomplete="current-password" /></label>
+      <p class="auth-hint" id="authHint"></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-ghost" id="authCancel">取消</button>
+        <button type="submit" class="btn btn-primary" id="authSubmit">确认</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="static/billing.js"></script>
+</body>
+</html>

@@ -12,10 +12,11 @@
 - 设置页单独展示 RollingGo/LLM 配置及连通性测试（RollingGo 测试须含机场搜索 + 航班查价探针）；API 密钥输入支持眼睛图标切换明文/密文；可选「搜索次数软提示」阈值（超过时在搜索栏警告，不阻断）；RollingGo 查价 API 失败时须提示「查价服务异常」，勿误导为「无命中」
 - nl-search 结果区对齐 flight-monitor-agent 暖色报告（侧栏筛选 + 图表/列表联动）；列表展示航班号/日期/价格；图表 hover 中文明细；筛选侧栏自然铺满、避免内部滚动
 - Flight Monitor Web 迭代优先方向 A（商业化）：可自主选型实现、自测迭代；每完成一项 Web 功能即 git commit 并 push 备份
+- **会员订阅**（`web/billing`）：六档套餐（免费试用 7 天、一周/两周/月度/年度/永久）；注册自动开通试用；`BILLING_ENABLED=false` 可关闭门禁（本地开发）；Stripe 支付（`STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` + `PUBLIC_BASE_URL`），未配置 Stripe 时 Mock 支付；Cookie `fm_token` 跨子路径鉴权；查价/监控按套餐限制日搜索次数与 Watch 条数
 
 ## Learned Workspace Facts
 
-- 本仓库 Flight Monitor 当前迭代主线为 Web：`web/gateway` 统一挂载 landing、`/nl-search/`、`/flight-watch/`、`/viz/`、`/skill/`；生产部署 Render（`flight-monitor-web.onrender.com`）；Tauri 桌面端存量存在、非当前开发范围
+- 本仓库 Flight Monitor 当前迭代主线为 Web：`web/gateway` 统一挂载 landing、`/nl-search/`、`/flight-watch/`、`/billing/`、`/viz/`、`/skill/`；生产部署 Render（`flight-monitor-web.onrender.com`）；Tauri 桌面端存量存在、非当前开发范围
 - 穷举搜索：`scripts/exhaustive_search.py`（引擎版）与 `scripts/exhaustive_search_standalone.py`（京津独立版）；结果写入 `scripts/exhaustive_results.json`
 - RollingGo 航班搜索 API 为 `https://mcp.rollinggo.cn/api/mcp/flightsearch`；MCP 服务名 `RollingGo-Flight`（streamable-http 需 `Accept: application/json, text/event-stream`）；Key 申请 [rollinggo.store](https://rollinggo.store/)；`totalAdultPrice` 通常为成人含税合计参考价（无票面/税费拆分）；响应常无 OTA 跳转且仅查价（`bookingUrl` 常为 null）；HTTP 200 但 `success: false` 为查价业务失败（非无票），引擎 `probe_flight_pricing` 用于连通性探针
 - 独立开源 **Cursor Skill** `flight-monitor-agent`（`.cursor/skills/flight-monitor-agent/`）：纯查价、不提 Flight Monitor 桌面 App；NL 解析、`run_search.py` 精简/全量穷举实时查价、暖色 HTML 分页报告（去程/返程低价榜、动态城市映射）；先 [rollinggo.store](https://rollinggo.store/) 申请 Key，再 `npx skills add sxyfe/skills@flight-monitor-agent` 或 GitHub [sxyfe/skills](https://github.com/sxyfe/skills)；对用户说明「精简模式/全量穷举」（CLI 仍为 `--mode smart/exhaustive`）；宣传页 `promo/skill-intro-1080x1440.html` 与 `promo/xhs/`（1080×1440），嵌入 `output/` 真实报告截图、不写 Python 代码块；Skill 不含视频分镜或推广素材生成
