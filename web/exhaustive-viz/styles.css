@@ -525,3 +525,11 @@ tbody tr:hover { background: rgba(0, 212, 170, 0.04); }
   .chart-grid { grid-template-columns: 1fr; }
   .chart-card--wide { grid-column: span 1; }
 }
+
+@media (max-width: 640px) {
+  .hero h1 { font-size: 1.5rem; }
+  .filters-panel { padding: 14px; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #offers-table { min-width: 640px; }
+  .sort-controls { width: 100%; }
+}

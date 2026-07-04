@@ -561,17 +561,23 @@ createApp({
     </div>
 
     <div v-if="tab==='history'" class="card">
-      <h2>查价历史 {{ selectedId || '' }}</h2>
+      <h2>查价历史 <span class="muted" style="font-weight:400">{{ selectedId || '' }}</span></h2>
       <div v-if="!snapshots.length" class="muted">选择监控后查看历史快照。</div>
-      <table v-else style="width:100%;font-size:0.85rem;border-collapse:collapse">
-        <tr style="text-align:left;color:var(--muted)"><th>时间</th><th>价格</th><th>Provider</th><th>可订</th></tr>
-        <tr v-for="s in snapshots" :key="s.id" style="border-top:1px solid var(--line)">
-          <td>{{ s.checked_at }}</td>
-          <td>{{ s.currency }} {{ s.price ?? '—' }}</td>
-          <td>{{ s.provider }}</td>
-          <td>{{ s.bookable ? '是' : '否' }}</td>
-        </tr>
-      </table>
+      <div v-else class="history-scroll">
+        <table class="history-table">
+          <thead>
+            <tr><th>时间</th><th>价格</th><th>Provider</th><th>可订</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="s in snapshots" :key="s.id">
+              <td>{{ s.checked_at }}</td>
+              <td>{{ s.currency }} {{ s.price ?? '—' }}</td>
+              <td>{{ s.provider }}</td>
+              <td>{{ s.bookable ? '是' : '否' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div v-if="tab==='settings'" class="card">

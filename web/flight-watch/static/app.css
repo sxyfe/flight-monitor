@@ -170,6 +170,11 @@ header h1 span { color: var(--coral); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 .btn.danger { color: #b00020; border-color: rgba(176, 0, 32, 0.25); }
 
+.history-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.history-table { width: 100%; min-width: 420px; border-collapse: collapse; font-size: 0.85rem; }
+.history-table th { text-align: left; color: var(--muted); padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.history-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+
 @media (max-width: 640px) {
   .watch-card { flex-direction: column; }
   .watch-card-actions { flex-direction: row; flex-wrap: wrap; align-items: flex-start; width: 100%; }
