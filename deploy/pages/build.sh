@@ -38,7 +38,7 @@ if ! grep -q 'name="web-base"' "$INDEX"; then
 fi
 
 if grep -q '<!-- VIZ_NAV -->' "$INDEX"; then
-  sed -i.bak 's|<!-- VIZ_NAV -->|<a href="../" class="btn btn-ghost" style="text-decoration:none">首页</a><a href="../viz/" class="btn btn-ghost" style="text-decoration:none">雷达</a><a href="../skill/" class="btn btn-ghost" style="text-decoration:none">Cursor Skill</a>|' "$INDEX"
+  sed -i.bak 's|<!-- VIZ_NAV -->|<a href="../" class="btn btn-ghost" style="text-decoration:none">首页</a><a href="../skill/" class="btn btn-ghost" style="text-decoration:none">Cursor Skill</a>|' "$INDEX"
   rm -f "$INDEX.bak"
 fi
 

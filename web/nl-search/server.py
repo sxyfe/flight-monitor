@@ -41,12 +41,6 @@ WEB_ROOT = os.environ.get("WEB_ROOT", "").rstrip("/")
 CREDENTIALS_FILE = Path(__file__).parent / ".credentials.local.json"
 
 
-def _api_path(path: str) -> str:
-    """子路径部署时 stream_url 等需带 WEB_ROOT 前缀。"""
-    if not path.startswith("/"):
-        path = f"/{path}"
-    return f"{WEB_ROOT}{path}" if WEB_ROOT else path
-
 _cors_raw = os.environ.get("ALLOWED_ORIGINS", "").strip()
 if _cors_raw:
     _cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
@@ -203,7 +197,6 @@ async def index():
         html = html.replace("<head>", f"<head>\n    {inject}", 1)
     viz_nav = (
         '<a href="/" class="btn btn-ghost" style="text-decoration:none">首页</a>'
-        '<a href="/viz/" class="btn btn-ghost" style="text-decoration:none">雷达</a>'
         '<a href="/skill/" class="btn btn-ghost" style="text-decoration:none">Cursor Skill</a>'
         if WEB_ROOT
         else ""
@@ -543,7 +536,7 @@ async def start_search(req: SearchRequest):
         return {
             "search_id": search_id,
             "status": "running",
-            "stream_url": _api_path(f"/api/search/{search_id}/stream"),
+            "stream_url": f"/api/search/{search_id}/stream",
             "search_type": "matrix",
         }
 
@@ -569,7 +562,7 @@ async def start_search(req: SearchRequest):
     return {
         "search_id": search_id,
         "status": "running",
-        "stream_url": _api_path(f"/api/search/{search_id}/stream"),
+        "stream_url": f"/api/search/{search_id}/stream",
     }
 
 
