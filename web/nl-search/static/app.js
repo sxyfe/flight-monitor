@@ -262,6 +262,9 @@
             : "";
         btn.href = `${prefix}/viz/?search_id=${encodeURIComponent(searchId)}`;
         btn.classList.remove("hidden");
+        try {
+            sessionStorage.setItem("fm_last_viz_search_id", searchId);
+        } catch (_) {}
     }
 
     function finishSearch(data, cancelled = false) {

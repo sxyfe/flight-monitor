@@ -526,6 +526,8 @@ tbody tr:hover { background: rgba(0, 212, 170, 0.04); }
   .chart-card--wide { grid-column: span 1; }
 }
 
+.hero-nav a.last-viz-link { color: var(--accent); font-weight: 600; }
+
 @media (max-width: 640px) {
   .hero h1 { font-size: 1.5rem; }
   .filters-panel { padding: 14px; }

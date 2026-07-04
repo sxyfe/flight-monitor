@@ -572,6 +572,23 @@ async function init() {
   setupFilters();
   bindEvents();
   render();
+  showLastSearchHint();
+}
+
+function showLastSearchHint() {
+  const params = new URLSearchParams(location.search);
+  if (params.get("search_id")) return;
+  let lastId = "";
+  try {
+    lastId = sessionStorage.getItem("fm_last_viz_search_id") || "";
+  } catch (_) {}
+  if (!lastId) return;
+  const nav = document.querySelector(".hero-nav");
+  if (!nav || nav.querySelector(".last-viz-link")) return;
+  nav.insertAdjacentHTML(
+    "beforeend",
+    ` · <a class="last-viz-link" href="?search_id=${encodeURIComponent(lastId)}">继续上次查价</a>`
+  );
 }
 
 function siteHref(path) {
