@@ -198,12 +198,12 @@
           <div class="matrix-card-best">${headerBest}</div>
           ${renderCardScaleLegend(routeScale)}
         </div>
-        <div class="matrix-scroll">${table}</div>
+        <div class="matrix-scroll" tabindex="0" aria-label="价格矩阵，可左右滑动查看">${table}</div>
       </article>`;
   }
 
-  const DATE_COL_MIN_PX = 44;
-  const ROW_HEAD_MIN_PX = 44;
+  const DATE_COL_MIN_PX = 52;
+  const ROW_HEAD_MIN_PX = 52;
 
   function matrixSizeTier(outCount, retCount) {
     const maxDim = Math.max(outCount, retCount);
@@ -279,19 +279,19 @@
     root.querySelectorAll(".matrix-cell[data-offer-id]").forEach((cell) => {
       const offer = byId[cell.dataset.offerId];
       if (!offer) return;
-      cell.addEventListener("mouseenter", (e) => {
+      const show = (e) => {
         const lines = window.ResultsAnalytics?.formatOfferTooltipLines
           ? window.ResultsAnalytics.formatOfferTooltipLines(offer)
           : [`${offer.origin_name} → ${offer.out_dest_name}`, `¥${offer.price}`, `${offer.out_date} / ${offer.ret_date}`];
         showTooltip(e, lines);
-      });
-      cell.addEventListener("mousemove", (e) => {
-        const lines = window.ResultsAnalytics?.formatOfferTooltipLines
-          ? window.ResultsAnalytics.formatOfferTooltipLines(offer)
-          : [];
-        if (lines.length) showTooltip(e, lines);
-      });
+      };
+      cell.addEventListener("mouseenter", show);
+      cell.addEventListener("mousemove", show);
       cell.addEventListener("mouseleave", hideTooltip);
+      cell.addEventListener("click", (e) => {
+        show(e);
+        setTimeout(hideTooltip, 2500);
+      });
     });
   }
 

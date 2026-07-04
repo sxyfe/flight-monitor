@@ -22,25 +22,48 @@
         originLabels: {},
         destinations: [],
         destLabels: {},
-        outDate: "",
-        retDate: "",
+        outDateStart: "",
+        outDateEnd: "",
+        retDateStart: "",
+        retDateEnd: "",
+        dateMode: "range",
       };
     }
 
     function formToIntent(form) {
-      const windowStart = form.outDate || "";
-      const windowEnd = form.retDate || "";
+      const outStart = form.outDateStart || "";
+      if (form.dateMode === "window") {
+        const windowEnd = form.retDateEnd || "";
+        return {
+          origins: form.origins,
+          destinations: form.destinations,
+          origin_labels: form.originLabels,
+          dest_labels: form.destLabels,
+          out_date: outStart,
+          ret_date: windowEnd,
+          out_date_start: outStart,
+          out_date_end: windowEnd,
+          ret_date_start: outStart,
+          ret_date_end: windowEnd,
+          min_stay_days: 1,
+          max_stay_days: null,
+          cabin: "ECONOMY",
+          adults: 1,
+          children: 0,
+        };
+      }
+      const outEnd = form.outDateEnd || outStart;
+      const retStart = form.retDateStart || "";
+      const retEnd = form.retDateEnd || retStart;
       return {
         origins: form.origins,
         destinations: form.destinations,
         origin_labels: form.originLabels,
         dest_labels: form.destLabels,
-        out_date: windowStart,
-        ret_date: windowEnd,
-        out_date_start: windowStart,
-        out_date_end: windowEnd,
-        ret_date_start: windowStart,
-        ret_date_end: windowEnd,
+        out_date_start: outStart,
+        out_date_end: outEnd,
+        ret_date_start: retStart,
+        ret_date_end: retEnd,
         min_stay_days: 1,
         max_stay_days: null,
         cabin: "ECONOMY",
@@ -69,13 +92,25 @@
           }
         }
 
-        return { form, validation, msg, msgType, minDate, openDatePicker };
+        function setDateMode(mode) {
+          form.dateMode = mode;
+          if (mode === "window" && form.outDateStart && form.retDateEnd) {
+            form.outDateEnd = form.retDateEnd;
+            form.retDateStart = form.outDateStart;
+          }
+        }
+
+        return { form, validation, msg, msgType, minDate, openDatePicker, setDateMode };
       },
       template: `
         <div class="matrix-form">
           <p class="parse-hint matrix-form-hint">
-            多出发地 × 多目的地；在去程日期至返程日期窗口内穷举所有去程×返程组合（纵轴=出发、横轴=返程）。
+            多出发地 × 多目的地；穷举去程×返程日期组合（纵轴=出发、横轴=返程）。
           </p>
+          <div class="matrix-date-mode" role="tablist" aria-label="日期模式">
+            <button type="button" class="matrix-mode-btn" :class="{ active: form.dateMode === 'range' }" @click="setDateMode('range')">独立范围</button>
+            <button type="button" class="matrix-mode-btn" :class="{ active: form.dateMode === 'window' }" @click="setDateMode('window')">共用窗口</button>
+          </div>
           <div class="form-row-compact matrix-locations">
             <div class="ui-field">
               <span class="ui-label">出发地</span>
@@ -94,16 +129,41 @@
               />
             </div>
           </div>
-          <div class="form-row-compact matrix-dates">
-            <div class="ui-field">
-              <span class="ui-label">去程日期</span>
-              <input class="ui-input ui-date-input" type="date" v-model="form.outDate" :min="minDate" aria-label="去程日期（窗口起始）" @click="openDatePicker" />
+          <template v-if="form.dateMode === 'range'">
+            <div class="form-row-compact matrix-dates">
+              <div class="ui-field">
+                <span class="ui-label">去程起始</span>
+                <input class="ui-input ui-date-input" type="date" v-model="form.outDateStart" :min="minDate" aria-label="去程起始日期" @click="openDatePicker" />
+              </div>
+              <div class="ui-field">
+                <span class="ui-label">去程结束</span>
+                <input class="ui-input ui-date-input" type="date" v-model="form.outDateEnd" :min="form.outDateStart || minDate" aria-label="去程结束日期" @click="openDatePicker" />
+              </div>
             </div>
-            <div class="ui-field">
-              <span class="ui-label">返程日期</span>
-              <input class="ui-input ui-date-input" type="date" v-model="form.retDate" :min="form.outDate || minDate" aria-label="返程日期（窗口结束）" @click="openDatePicker" />
+            <div class="form-row-compact matrix-dates">
+              <div class="ui-field">
+                <span class="ui-label">返程起始</span>
+                <input class="ui-input ui-date-input" type="date" v-model="form.retDateStart" :min="form.outDateStart || minDate" aria-label="返程起始日期" @click="openDatePicker" />
+              </div>
+              <div class="ui-field">
+                <span class="ui-label">返程结束</span>
+                <input class="ui-input ui-date-input" type="date" v-model="form.retDateEnd" :min="form.retDateStart || form.outDateStart || minDate" aria-label="返程结束日期" @click="openDatePicker" />
+              </div>
             </div>
-          </div>
+          </template>
+          <template v-else>
+            <div class="form-row-compact matrix-dates">
+              <div class="ui-field">
+                <span class="ui-label">窗口起始（去程）</span>
+                <input class="ui-input ui-date-input" type="date" v-model="form.outDateStart" :min="minDate" aria-label="窗口起始日期" @click="openDatePicker" />
+              </div>
+              <div class="ui-field">
+                <span class="ui-label">窗口结束（返程）</span>
+                <input class="ui-input ui-date-input" type="date" v-model="form.retDateEnd" :min="form.outDateStart || minDate" aria-label="窗口结束日期" @click="openDatePicker" />
+              </div>
+            </div>
+            <p class="parse-hint matrix-form-hint matrix-window-hint">两轴共用同一日期窗口，适合「国庆前后」等连续区间扫价。</p>
+          </template>
           <p v-if="msg" class="ui-msg" :class="'ui-msg-' + (msgType || 'ok')">{{ msg }}</p>
         </div>
       `,
