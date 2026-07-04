@@ -55,6 +55,56 @@
         header h1 span {
             color: var(--coral);
         }
+
+        .site-nav-mini {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .site-nav-mini a {
+            font-size: 0.82rem;
+            padding: 6px 10px;
+            border-radius: 8px;
+            color: var(--muted);
+            text-decoration: none;
+        }
+
+        .site-nav-mini a:hover {
+            color: var(--teal);
+            background: rgba(13, 110, 110, 0.08);
+        }
+
+        .site-nav-mini a.active {
+            color: var(--coral);
+            font-weight: 600;
+        }
+
+        .config-status-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0 4px;
+        }
+
+        .config-pill {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .config-pill.ok {
+            border-color: rgba(45, 106, 79, 0.35);
+            color: #2d6a4f;
+            background: rgba(45, 106, 79, 0.08);
+        }
+
+        .config-pill.off {
+            color: var(--muted);
+        }
         
         .wrap {
             max-width: 1180px;
@@ -302,6 +352,15 @@
             header h1 {
                 font-size: 1.05rem;
             }
+            .site-nav-mini {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap;
+                max-width: 100%;
+            }
+            .site-nav-mini a {
+                flex-shrink: 0;
+            }
             .tabs,
             .result-tabs {
                 overflow-x: auto;
@@ -427,9 +486,15 @@
 <body>
     <header>
         <h1>特价机票搜索 <span>Flight Monitor</span></h1>
-        <div style="display:flex;gap:10px;align-items:center">
-            <!-- VIZ_NAV -->
-            <button class="btn btn-ghost" id="btnSettings">api key 设置</button>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <nav class="site-nav-mini" aria-label="站点导航">
+                <a href="#" id="navHome">首页</a>
+                <a href="#" id="navWatch">监控</a>
+                <a href="#" id="navViz">雷达</a>
+                <a href="#" id="navSkill">Skill</a>
+                <a href="#" id="navNlSearch" class="active">查价</a>
+            </nav>
+            <button class="btn btn-ghost" id="btnSettings">API 设置</button>
         </div>
     </header>
 
@@ -513,6 +578,7 @@
             <input id="llmModel" type="text" value="gpt-4o-mini" />
           </div>
         </div>
+        <div class="config-status-row" id="configStatusRow" aria-live="polite"></div>
         <div class="row" style="margin-top: 16px">
           <button class="btn btn-primary" id="btnSaveConfig">保存配置</button>
           <button class="btn btn-ghost" id="btnTestRg">测试 RollingGo</button>
@@ -869,6 +935,10 @@
         </section>
 
         <section class="card hidden" id="matrixResultsSection">
+          <div class="results-toolbar">
+            <span class="results-toolbar-label">价格矩阵结果</span>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnMatrixBack">← 修改条件</button>
+          </div>
           <div id="matrixReportRoot"></div>
         </section>
       </div>

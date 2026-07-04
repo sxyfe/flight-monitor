@@ -14,4 +14,16 @@
     const p = path.startsWith("/") ? path : `/${path}`;
     return `${window.webBase()}${p}`;
   };
+
+  /** 网关子路径下跳转到站点根（/nl-search → /，/flight-watch → /） */
+  window.siteHref = function siteHref(path) {
+    const p = path.startsWith("/") ? path : `/${path}`;
+    const wb = window.webBase();
+    if (wb && /\/nl-search\/?$/.test(wb)) {
+      return wb.replace(/\/nl-search\/?$/, "") + p;
+    }
+    const m = location.pathname.match(/^(.*)\/nl-search\/?/);
+    if (m) return m[1] + p;
+    return p;
+  };
 })();

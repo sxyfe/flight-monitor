@@ -97,7 +97,28 @@
             };
             if ($("softLimitEnabled")) $("softLimitEnabled").checked = searchSettings.soft_limit_enabled;
             if ($("softQueryLimit")) $("softQueryLimit").value = searchSettings.soft_query_limit;
+            await renderConfigStatus();
         } catch (_) {}
+    }
+
+    async function renderConfigStatus() {
+        const row = $("configStatusRow");
+        if (!row) return;
+        try {
+            const st = await api("/api/config/status");
+            const pills = [
+                { label: "RollingGo", ok: st.rollinggo_configured },
+                { label: "LLM（可选）", ok: st.llm_configured },
+            ];
+            row.innerHTML = pills
+                .map(
+                    (p) =>
+                        `<span class="config-pill ${p.ok ? "ok" : "off"}">${p.label}：${p.ok ? "已配置" : "未配置"}</span>`
+                )
+                .join("");
+        } catch (_) {
+            row.innerHTML = "";
+        }
     }
 
     async function refreshLlmHint() {
@@ -142,6 +163,7 @@
             };
             $("configStatus").textContent = "配置已保存";
             refreshLlmHint();
+            renderConfigStatus();
         } catch (e) {
             $("configStatus").textContent = e.detail || "保存失败";
         }
@@ -170,6 +192,29 @@
 
     loadConfig();
     refreshLlmHint();
+
+    function initSiteNav() {
+        const href = typeof window.siteHref === "function" ? window.siteHref : (p) => p;
+        const links = {
+            navHome: href("/"),
+            navWatch: href("/flight-watch/"),
+            navViz: href("/viz/"),
+            navSkill: href("/skill/"),
+            navNlSearch: href("/nl-search/"),
+        };
+        Object.entries(links).forEach(([id, url]) => {
+            const el = $(id);
+            if (el) el.href = url;
+        });
+    }
+    initSiteNav();
+
+    $("btnMatrixBack")?.addEventListener("click", () => {
+        $("matrixResultsSection")?.classList.add("hidden");
+        $("viewMain")?.classList.remove("hidden");
+        switchQueryTab("matrix");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 
     async function refreshSearchSettings() {
         try {
@@ -252,6 +297,7 @@
         });
         $("matrixResultsSection") ?.classList.remove("hidden");
         $("resultsSection") ?.classList.add("hidden");
+        $("viewMain")?.classList.add("hidden");
         if (hideProgress) $("progressSection") ?.classList.add("hidden");
     }
 
@@ -402,6 +448,7 @@
 
         $("resultsSection").classList.remove("hidden");
         $("matrixResultsSection") ?.classList.add("hidden");
+        $("viewMain")?.classList.remove("hidden");
         if (hideProgress) $("progressSection").classList.add("hidden");
     }
 

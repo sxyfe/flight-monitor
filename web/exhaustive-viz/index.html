@@ -21,6 +21,7 @@
       <a href="../">首页</a>
       <a href="../nl-search/">在线查价</a>
       <a href="../flight-watch/">监控</a>
+      <a href="../viz/" class="active">雷达</a>
       <a href="../skill/">Cursor Skill</a>
     </nav>
   </header>
@@ -32,6 +33,17 @@
     <p class="hero-nav"><a href="../nl-search/">→ 自然语言查价</a> · <span id="viz-source-hint">静态穷举快照</span></p>
     <div class="hero-stats" id="hero-stats"></div>
   </header>
+
+  <section id="viz-error" class="viz-error" hidden>
+    <div class="viz-error-card">
+      <h2>无法加载数据</h2>
+      <p id="viz-error-msg"></p>
+      <div class="viz-error-actions">
+        <a id="viz-error-nl" href="../nl-search/">返回在线查价</a>
+        <a id="viz-error-home" href="../">返回首页</a>
+      </div>
+    </div>
+  </section>
 
   <aside class="filters-panel">
     <div class="panel-head">

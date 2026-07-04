@@ -533,3 +533,54 @@ tbody tr:hover { background: rgba(0, 212, 170, 0.04); }
   #offers-table { min-width: 640px; }
   .sort-controls { width: 100%; }
 }
+
+.viz-error {
+  grid-column: 1 / -1;
+  padding: 2rem 1.5rem 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+.viz-error-card {
+  max-width: 420px;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.viz-error-card h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: var(--accent-pink);
+}
+
+.viz-error-card p {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.viz-error-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.viz-error-actions a {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.viz-error-actions a:first-child {
+  background: rgba(0, 212, 170, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}

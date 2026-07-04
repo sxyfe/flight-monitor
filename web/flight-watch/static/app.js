@@ -44,7 +44,11 @@ createApp({
     });
     const showRgKey = ref(false);
     const showPushplus = ref(false);
-    const status = reactive({ rollinggo_configured: false });
+    const status = reactive({
+      rollinggo_configured: false,
+      feishu_configured: false,
+      pushplus_configured: false,
+    });
     const listFilter = ref("all");
     const listSort = ref("updated");
     const presetPreview = ref(null);
@@ -274,6 +278,13 @@ createApp({
       presetPreview.value = null;
     }
 
+    function siteHref(path) {
+      const p = path.startsWith("/") ? path : `/${path}`;
+      const m = location.pathname.match(/^(.*\/flight-watch)\/?/);
+      const prefix = m ? m[1].replace(/\/flight-watch\/?$/, "") : "";
+      return `${prefix}${p}`;
+    }
+
     function addLeg() {
       form.legs.push({ from_city: "", to_city: "", date: "" });
     }
@@ -398,6 +409,7 @@ createApp({
       importAllPresets,
       openPresetPreview,
       closePresetPreview,
+      siteHref,
       addLeg,
       removeLeg,
       setupAirportInput,
@@ -408,7 +420,15 @@ createApp({
   template: `
   <header>
     <h1>Flight <span>Watch</span> · 机票监控</h1>
-    <span class="muted">独立 Web 工具 · 与桌面/nl-search 无集成</span>
+    <div class="header-right">
+      <nav class="header-nav" aria-label="站点导航">
+        <a :href="siteHref('/')">首页</a>
+        <a :href="siteHref('/nl-search/')">查价</a>
+        <a :href="siteHref('/viz/')">雷达</a>
+        <span class="header-nav-active">监控</span>
+      </nav>
+      <span class="muted">Web · 飞书/微信通知</span>
+    </div>
   </header>
   <div class="wrap">
     <div class="tabs">
@@ -583,6 +603,11 @@ createApp({
     <div v-if="tab==='settings'" class="card">
       <h2>设置</h2>
       <p class="muted">凭据仅保存在本机，不会上传。</p>
+      <div class="notify-status-row">
+        <span class="status-pill" :class="status.rollinggo_configured ? 'on' : 'off'">RollingGo：{{ status.rollinggo_configured ? '已配置' : '未配置' }}</span>
+        <span class="status-pill" :class="status.feishu_configured ? 'on' : 'off'">飞书：{{ status.feishu_configured ? '已配置' : '未配置' }}</span>
+        <span class="status-pill" :class="status.pushplus_configured ? 'on' : 'off'">微信：{{ status.pushplus_configured ? '已配置' : '未配置' }}</span>
+      </div>
       <div class="field"><label>RollingGo Base URL</label><input v-model="config.rollinggo.base_url" /></div>
       <div class="field">
         <label>RollingGo API Key</label>

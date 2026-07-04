@@ -574,7 +574,30 @@ async function init() {
   render();
 }
 
+function siteHref(path) {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  const m = location.pathname.match(/^(.*\/viz)\/?/);
+  const prefix = m ? m[1].replace(/\/viz\/?$/, "") : "";
+  return `${prefix}${p}`;
+}
+
+function showVizError(message) {
+  const panel = document.getElementById("viz-error");
+  const msgEl = document.getElementById("viz-error-msg");
+  const nlLink = document.getElementById("viz-error-nl");
+  const homeLink = document.getElementById("viz-error-home");
+  if (msgEl) msgEl.textContent = message;
+  if (nlLink) nlLink.href = siteHref("/nl-search/");
+  if (homeLink) homeLink.href = siteHref("/");
+  document.querySelector(".filters-panel")?.setAttribute("hidden", "");
+  document.querySelector(".dashboard")?.setAttribute("hidden", "");
+  document.querySelector(".hero-stats")?.setAttribute("hidden", "");
+  if (panel) panel.hidden = false;
+}
+
 init().catch((err) => {
-  document.getElementById("meta-line").textContent = err.message;
+  const metaEl = document.getElementById("meta-line");
+  if (metaEl) metaEl.textContent = "加载失败";
+  showVizError(err.message || "未知错误");
   console.error(err);
 });
