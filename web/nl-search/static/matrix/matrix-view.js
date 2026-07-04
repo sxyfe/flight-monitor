@@ -64,7 +64,7 @@
             return m;
         }
 
-        function computeGlobalScale(offers) {
+        function computePriceScale(offers) {
             const prices = (offers || []).map((o) => o.price).filter((p) => typeof p === "number");
             if (!prices.length) return { min: 0, max: 0 };
             return { min: Math.min(...prices), max: Math.max(...prices) };
@@ -83,7 +83,7 @@
             return `${route.origin_name || route.origin} → ${route.dest_name || route.dest}`;
         }
 
-        function buildRouteSummaries(routes, byRoute, globalScale) {
+        function buildRouteSummaries(routes, byRoute) {
             return routes.map((route) => {
                 const key = routeKey(route.origin, route.dest);
                 const offers = byRoute.get(key) || [];
@@ -145,7 +145,15 @@
       </div>`;
   }
 
-  function renderMatrixCard(route, offers, outDays, retDays, globalScale) {
+  function renderCardScaleLegend(scale) {
+    if (scale.max <= scale.min) return "";
+    const minLabel = `¥${Math.round(scale.min).toLocaleString()}`;
+    const maxLabel = `¥${Math.round(scale.max).toLocaleString()}`;
+    return `<div class="matrix-card-scale">色阶 ${minLabel} ~ ${maxLabel}（本路线相对高低）</div>`;
+  }
+
+  function renderMatrixCard(route, offers, outDays, retDays) {
+    const routeScale = computePriceScale(offers);
     const pairMap = buildPairMap(offers);
     let bestOffer = null;
     offers.forEach((o) => {
@@ -174,7 +182,7 @@
           return;
         }
         const isBest = bestOffer && offer.id === bestOffer.id;
-        const bg = colorForPrice(offer.price, globalScale.min, globalScale.max);
+        const bg = colorForPrice(offer.price, routeScale.min, routeScale.max);
         const cls = `matrix-cell${isBest ? " is-best" : ""}`;
         const priceText = Math.round(offer.price).toLocaleString();
         table += `<td class="${cls}" style="background:${bg}" data-offer-id="${offer.id}">${priceText}</td>`;
@@ -188,6 +196,7 @@
         <div class="matrix-card-head">
           ${routeLabel(route)}
           <div class="matrix-card-best">${headerBest}</div>
+          ${renderCardScaleLegend(routeScale)}
         </div>
         <div class="matrix-scroll">${table}</div>
       </article>`;
@@ -305,13 +314,11 @@
     const outDays = meta?.out_days || [];
     const retDays = meta?.ret_days || [];
     const byRoute = groupOffersByRoute(offers);
-    const globalScale = computeGlobalScale(offers);
-    const summaries = buildRouteSummaries(routes, byRoute, globalScale);
+    const summaries = buildRouteSummaries(routes, byRoute);
 
     const routeCount = routes.length;
     const title = intent?.title || "机票价格矩阵总览";
     const dateMeta = formatMatrixDateMeta(meta);
-    const axisHint = "横轴=返程日期 · 纵轴=出发日期";
 
     let banner = "";
     const abnormal =
@@ -325,19 +332,10 @@
       banner = `<div class="matrix-banner-err">${detail}${stats?.api_failures ? `（${stats.api_failures} 次查价失败）` : ""}</div>`;
     }
 
-    const legendMin =
-      globalScale.max > globalScale.min
-        ? `¥${Math.round(globalScale.min).toLocaleString()}`
-        : "—";
-    const legendMax =
-      globalScale.max > globalScale.min
-        ? `¥${Math.round(globalScale.max).toLocaleString()}`
-        : "—";
-
     const cards = routes
       .map((route) => {
         const key = routeKey(route.origin, route.dest);
-        return renderMatrixCard(route, byRoute.get(key) || [], outDays, retDays, globalScale);
+        return renderMatrixCard(route, byRoute.get(key) || [], outDays, retDays);
       })
       .join("");
 
@@ -349,14 +347,8 @@
           <h1>${title}</h1>
           <div class="matrix-hero-meta">
             有效路线 ${routeCount} 条 · 横轴=返程日期 · 纵轴=出发日期 · 币种 CNY<br/>
+            单元格色阶按各路线内价格相对高低着色，不同路线之间颜色不可直接比较<br/>
             ${dateMeta}
-          </div>
-          <div class="matrix-legend-wrap">
-            <span style="font-size:0.78rem;color:var(--muted)">价格色阶</span>
-            <div>
-              <div class="matrix-legend-bar"></div>
-              <div class="matrix-legend-labels"><span>${legendMin}</span><span>${legendMax}</span></div>
-            </div>
           </div>
         </header>
         <div class="matrix-summary-row">

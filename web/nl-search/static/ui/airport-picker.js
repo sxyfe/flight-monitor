@@ -31,6 +31,8 @@
       const chipInput = ref(null);
       let timer = null;
 
+      const AUTH_CODES = new Set(["NOT_CONFIGURED", "ROLLINGGO_AUTH"]);
+
       const search = (q) => {
         clearTimeout(timer);
         apiError.value = "";
@@ -45,6 +47,18 @@
           fetch(window.apiUrl(`/api/airport/search?q=${encodeURIComponent(q.trim())}`))
             .then(async (r) => {
               const d = await r.json().catch(() => ({}));
+              const items = (d.items || []).map((item) => ({
+                ...item,
+                label: formatAirportLabel(item),
+              }));
+              if (!items.length) {
+                apiWarning.value = "";
+                suggestions.value = [];
+                open.value = false;
+                apiError.value =
+                  d.error && AUTH_CODES.has(d.code) ? d.error : "未搜索到机场";
+                return;
+              }
               if (!r.ok || d.error) {
                 apiError.value = d.error || `机场搜索失败（${r.status}）`;
                 apiWarning.value = "";
@@ -53,14 +67,8 @@
                 return;
               }
               apiWarning.value = d.warning || "";
-              suggestions.value = (d.items || []).map((item) => ({
-                ...item,
-                label: formatAirportLabel(item),
-              }));
-              open.value = suggestions.value.length > 0;
-              if (!suggestions.value.length) {
-                apiError.value = "未查询到机场，请检查输入内容";
-              }
+              suggestions.value = items;
+              open.value = true;
             })
             .catch(() => {
               apiError.value = "机场搜索请求失败";
