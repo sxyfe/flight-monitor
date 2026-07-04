@@ -1,4 +1,4 @@
-"""Flight Monitor 统一 Web 网关：官网 + exhaustive-viz + nl-search + flight-watch + billing。"""
+"""Flight Monitor 统一 Web 网关：官网 + nl-search + flight-watch + billing。"""
 from __future__ import annotations
 
 import importlib.util
@@ -19,7 +19,9 @@ os.environ.setdefault("WEB_ROOT", "/nl-search")
 
 
 def _load_subapp(module_name: str, app_dir: Path):
-    sys.path.insert(0, str(app_dir))
+    app_dir_str = str(app_dir)
+    if app_dir_str not in sys.path:
+        sys.path.append(app_dir_str)
     spec = importlib.util.spec_from_file_location(module_name, app_dir / "server.py")
     if spec is None or spec.loader is None:
         raise RuntimeError(f"无法加载 {app_dir / 'server.py'}")
@@ -34,18 +36,12 @@ billing_app = _load_subapp("billing_server", WEB / "billing")
 
 app = FastAPI(title="Flight Monitor Web", version="1.1.0")
 LANDING_DIR = WEB / "landing"
-VIZ_DIR = WEB / "exhaustive-viz"
 SKILL_DIR = LANDING_DIR / "skill"
 
 
 @app.get("/nl-search")
 async def nl_search_redirect():
     return RedirectResponse("/nl-search/", status_code=302)
-
-
-@app.get("/viz")
-async def viz_redirect():
-    return RedirectResponse("/viz/", status_code=302)
 
 
 @app.get("/skill")
@@ -66,6 +62,5 @@ async def billing_redirect():
 app.mount("/billing", billing_app)
 app.mount("/nl-search", nl_app)
 app.mount("/flight-watch", fw_app)
-app.mount("/viz", StaticFiles(directory=VIZ_DIR, html=True), name="viz")
 app.mount("/skill", StaticFiles(directory=SKILL_DIR, html=True), name="skill")
 app.mount("/", StaticFiles(directory=LANDING_DIR, html=True), name="landing")

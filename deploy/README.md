@@ -6,7 +6,7 @@
 |------|------|
 | `/` | Flight Monitor 官网落地页 |
 | `/nl-search/` | 自然语言查价（nl-search，含 API / SSE） |
-| `/viz/` | 穷举特价可视化（exhaustive-viz） |
+| `/billing/` | 使用说明（查价/监控免费，无需注册） |
 | `/skill/` | Cursor Skill（flight-monitor-agent）介绍与安装 |
 
 > **说明**：GitHub Pages **只能托管静态文件**，无法在 `github.io` 上运行查价 API。  
@@ -31,8 +31,8 @@
 ```bash
 docker build -f deploy/web/Dockerfile -t flight-monitor-web .
 docker run -p 7860:7860 -e ROLLINGGO_API_KEY=你的Key flight-monitor-web
-# 穷举雷达 http://127.0.0.1:7860/viz/
 # 查价     http://127.0.0.1:7860/nl-search/
+# 说明     http://127.0.0.1:7860/billing/
 # 官网     http://127.0.0.1:7860/
 # Skill    http://127.0.0.1:7860/skill/
 ```
@@ -44,7 +44,7 @@ docker run -p 7860:7860 -e ROLLINGGO_API_KEY=你的Key flight-monitor-web
 1. 仓库 **Settings → Pages**：Source 选 `gh-pages` 分支 / `(root)`
 2. 推送 `main` 后 workflow `Deploy web to GitHub Pages` 自动构建并发布
 3. 访问：https://sxyfe.github.io/flight-monitor/
-   - `/` — 穷举雷达（完整可用）
+   - `/` — 官网
    - `/nl-search/` — 查价 UI（**无后端，无法实际搜索**）
 
 ---
@@ -52,11 +52,14 @@ docker run -p 7860:7860 -e ROLLINGGO_API_KEY=你的Key flight-monitor-web
 ## 本地开发
 
 ```bash
-# 仅 nl-search（根路径 /）
-cd web/nl-search && python server.py
+# 统一网关（推荐，与线上一致：/、/nl-search/、/billing/、/flight-watch/、/skill/）
+npm run nl-search:dev
 
-# 统一网关（与线上一致）
-PYTHONPATH=. WEB_ROOT=/nl-search python -m uvicorn web.gateway.server:app --reload --port 7860
+# 等价命令
+PYTHONPATH=. WEB_ROOT=/nl-search python -m uvicorn web.gateway.server:app --reload --port 8765
+
+# 仅 nl-search 子应用（无 billing 等子路径）
+cd web/nl-search && python3 -m uvicorn server:app --host 127.0.0.1 --port 8765
 ```
 
 ---

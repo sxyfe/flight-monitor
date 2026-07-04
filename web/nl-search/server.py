@@ -14,7 +14,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -198,20 +198,39 @@ def _optional_rollinggo_client() -> RollingGoClient | None:
         return None
 
 
-@app.get("/")
-async def index():
+def _render_index_html() -> HTMLResponse:
     html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
     inject = f'<meta name="web-base" content="{WEB_ROOT}" />'
     if 'name="web-base"' not in html:
         html = html.replace("<head>", f"<head>\n    {inject}", 1)
     viz_nav = (
         '<a href="/" class="btn btn-ghost" style="text-decoration:none">首页</a>'
-        '<a href="/skill/" class="btn btn-ghost" style="text-decoration:none">Cursor Skill</a>'
+        '<a href="/skill/" class="btn btn-ghost" style="text-decoration:none">Skill</a>'
         if WEB_ROOT
         else ""
     )
     html = html.replace("<!-- VIZ_NAV -->", viz_nav)
     return HTMLResponse(html)
+
+
+@app.get("/")
+async def index():
+    return _render_index_html()
+
+
+@app.get("/nl-search")
+async def nl_search_redirect():
+    """standalone 本地开发：/nl-search/ 重定向到根路径。"""
+    if WEB_ROOT:
+        return _render_index_html()
+    return RedirectResponse("/", status_code=302)
+
+
+@app.get("/nl-search/")
+async def nl_search_index():
+    if WEB_ROOT:
+        return _render_index_html()
+    return RedirectResponse("/", status_code=302)
 
 
 @app.get("/api/config")

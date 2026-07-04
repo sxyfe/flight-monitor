@@ -9,8 +9,9 @@ from typing import Any
 WEB = Path(__file__).resolve().parent.parent
 BILLING_DIR = WEB / "billing"
 
+# 追加到 path 末尾，避免覆盖 nl-search / flight-watch 的 server 模块解析
 if str(BILLING_DIR) not in sys.path:
-    sys.path.insert(0, str(BILLING_DIR))
+    sys.path.append(str(BILLING_DIR))
 
 
 def billing_available() -> bool:

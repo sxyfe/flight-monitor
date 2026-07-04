@@ -1,738 +1,844 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1080" />
-    <title>flight-monitor-agent · Cursor Skill 介绍</title>
+    <title>flight-monitor-agent · Skill 介绍</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
-         :root {
-            --w: 1080px;
-            --bg: #ebe6dc;
-            --card: #fffdf8;
-            --ink: #141210;
-            --muted: #5c574f;
-            --coral: #d94e2b;
-            --teal: #0a6464;
-            --line: rgba(20, 18, 16, 0.1);
-            --display: "Fraunces", "Noto Serif SC", serif;
-            --body: "Noto Serif SC", serif;
-            --mono: "IBM Plex Mono", ui-monospace, monospace;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
+      :root {
+        --w: 1080px;
+        --bg: #ebe6dc;
+        --card: #fffdf8;
+        --ink: #141210;
+        --muted: #5c574f;
+        --coral: #d94e2b;
+        --teal: #0a6464;
+        --line: rgba(20, 18, 16, 0.1);
+        --display: "Fraunces", "Noto Serif SC", serif;
+        --body: "Noto Serif SC", serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        counter-reset: slide;
+        background: #2a2826;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 0 32px;
+        font-family: var(--body);
+        color: var(--ink);
+      }
+      /* 宽 1080，高度随内容收紧，无强制 1440 */
+
+      .frame {
+        counter-increment: slide;
+        width: var(--w);
+        position: relative;
+        background: var(--bg);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      }
+
+      .grain {
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        opacity: 0.045;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        z-index: 99;
+      }
+
+      .mesh {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 70% 50% at 8% 12%,
+            rgba(217, 78, 43, 0.12),
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse 60% 45% at 92% 88%,
+            rgba(10, 100, 100, 0.14),
+            transparent 50%
+          ),
+          linear-gradient(165deg, #f5f0e6 0%, var(--bg) 45%, #e4ddd0 100%);
+      }
+
+      .inner {
+        position: relative;
+        z-index: 2;
+        padding: 32px 40px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .tag {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--coral);
+      }
+
+      h1 {
+        font-family: var(--display);
+        font-size: 48px;
+        line-height: 1.1;
+        font-weight: 800;
+        margin-top: 6px;
+      }
+
+      h1 em {
+        font-style: normal;
+        color: var(--teal);
+      }
+
+      h2 {
+        font-family: var(--display);
+        font-size: 26px;
+        font-weight: 700;
+        line-height: 1.25;
+        margin-top: 4px;
+      }
+
+      h3 {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--teal);
+        margin-bottom: 6px;
+      }
+
+      .sub {
+        font-size: 15px;
+        line-height: 1.55;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .pill {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-family: var(--mono);
+        color: var(--teal);
+      }
+
+      .footer-bar {
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .pagenum::before {
+        content: counter(slide);
+      }
+
+      .shot {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        background: var(--card);
+        box-shadow: 0 4px 16px rgba(20, 18, 16, 0.07);
+        line-height: 0;
+      }
+
+      .shot img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .stat-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .stat-row.cols3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .stat-box {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 8px;
+        text-align: center;
+      }
+
+      .stat-box .val {
+        font-family: var(--display);
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--coral);
+      }
+
+      .stat-box .val.teal {
+        color: var(--teal);
+      }
+
+      .stat-box .val.sm {
+        font-size: 20px;
+      }
+
+      .stat-box .lbl {
+        margin-top: 2px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .feat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .feat-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px 14px;
+      }
+
+      .feat-card h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+
+      .feat-card p {
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px 16px;
+      }
+
+      .card h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+
+      .card p {
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .card .ex {
+        margin-top: 8px;
+        padding: 8px 10px;
+        background: rgba(10, 100, 100, 0.06);
+        border-radius: 8px;
+        border-left: 3px solid var(--coral);
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--ink);
+      }
+
+      .mode-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .mode-table th,
+      .mode-table td {
+        border: 1px solid var(--line);
+        padding: 10px 12px;
+        text-align: left;
+      }
+
+      .mode-table th {
+        background: rgba(10, 100, 100, 0.08);
+        color: var(--teal);
+        font-weight: 700;
+      }
+
+      .nl-box {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-size: 15px;
+        line-height: 1.6;
+        border-left: 4px solid var(--coral);
+      }
+
+      .chips {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .chips span {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .chips strong {
+        color: var(--ink);
+      }
+
+      .note {
+        font-size: 12px;
+        color: var(--muted);
+        font-family: var(--mono);
+        line-height: 1.5;
+      }
+
+      .bullet-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+
+      .bullet-row span {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 6px;
+        font-size: 11px;
+        text-align: center;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .bullet-row strong {
+        color: var(--ink);
+        display: block;
+      }
+
+      .cta {
+        background: linear-gradient(135deg, var(--teal), #085050);
+        color: #fff;
+        border-radius: 10px;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .cta strong {
+        font-family: var(--display);
+        font-size: 18px;
+      }
+
+      .cta code {
+        font-family: var(--mono);
+        font-size: 11px;
+        background: rgba(255, 255, 255, 0.12);
+        padding: 8px 12px;
+        border-radius: 6px;
+      }
+
+      .key-banner {
+        background: linear-gradient(
+          135deg,
+          rgba(217, 78, 43, 0.12),
+          rgba(10, 100, 100, 0.1)
+        );
+        border: 1px solid rgba(217, 78, 43, 0.35);
+        border-left: 4px solid var(--coral);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--ink);
+      }
+
+      .key-banner strong {
+        color: var(--coral);
+      }
+
+      .key-banner a {
+        color: var(--teal);
+        font-family: var(--mono);
+        font-weight: 500;
+        text-decoration: none;
+      }
+
+      .setup-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .setup-step {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 10px;
+        align-items: start;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+
+      .setup-step .num {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--teal);
+        color: #fff;
+        font-family: var(--display);
+        font-size: 15px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .setup-step strong {
+        color: var(--ink);
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .setup-step a {
+        color: var(--teal);
+        font-family: var(--mono);
+        text-decoration: none;
+      }
+
+      .hint {
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: #888;
+      }
+
+      @media print {
         body {
-            counter-reset: slide;
-            background: #2a2826;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-            padding: 16px 0 32px;
-            font-family: var(--body);
-            color: var(--ink);
+          background: white;
+          padding: 0;
+          gap: 0;
         }
-        /* 宽 1080，高度随内容收紧，无强制 1440 */
-        
         .frame {
-            counter-increment: slide;
-            width: var(--w);
-            position: relative;
-            background: var(--bg);
-            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+          box-shadow: none;
+          page-break-after: always;
         }
-        
-        .grain {
-            pointer-events: none;
-            position: absolute;
-            inset: 0;
-            opacity: 0.045;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-            z-index: 99;
-        }
-        
-        .mesh {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse 70% 50% at 8% 12%, rgba(217, 78, 43, 0.12), transparent 55%), radial-gradient(ellipse 60% 45% at 92% 88%, rgba(10, 100, 100, 0.14), transparent 50%), linear-gradient(165deg, #f5f0e6 0%, var(--bg) 45%, #e4ddd0 100%);
-        }
-        
-        .inner {
-            position: relative;
-            z-index: 2;
-            padding: 32px 40px 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .tag {
-            font-family: var(--mono);
-            font-size: 12px;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: var(--coral);
-        }
-        
-        h1 {
-            font-family: var(--display);
-            font-size: 48px;
-            line-height: 1.1;
-            font-weight: 800;
-            margin-top: 6px;
-        }
-        
-        h1 em {
-            font-style: normal;
-            color: var(--teal);
-        }
-        
-        h2 {
-            font-family: var(--display);
-            font-size: 26px;
-            font-weight: 700;
-            line-height: 1.25;
-            margin-top: 4px;
-        }
-        
-        h3 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--teal);
-            margin-bottom: 6px;
-        }
-        
-        .sub {
-            font-size: 15px;
-            line-height: 1.55;
-            color: var(--muted);
-            margin-top: 4px;
-        }
-        
-        .pill-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        
-        .pill {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            padding: 6px 12px;
-            font-size: 12px;
-            font-family: var(--mono);
-            color: var(--teal);
-        }
-        
-        .footer-bar {
-            padding-top: 10px;
-            border-top: 1px solid var(--line);
-            display: flex;
-            justify-content: space-between;
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--muted);
-        }
-        
-        .pagenum::before {
-            content: counter(slide);
-        }
-        
-        .shot {
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid var(--line);
-            background: var(--card);
-            box-shadow: 0 4px 16px rgba(20, 18, 16, 0.07);
-            line-height: 0;
-        }
-        
-        .shot img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-        
-        .stack {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .stat-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-        
-        .stat-row.cols3 {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        
-        .stat-box {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 10px 8px;
-            text-align: center;
-        }
-        
-        .stat-box .val {
-            font-family: var(--display);
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--coral);
-        }
-        
-        .stat-box .val.teal {
-            color: var(--teal);
-        }
-        
-        .stat-box .val.sm {
-            font-size: 20px;
-        }
-        
-        .stat-box .lbl {
-            margin-top: 2px;
-            font-size: 11px;
-            color: var(--muted);
-        }
-        
-        .feat-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        
-        .feat-card {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 16px 14px;
-        }
-        
-        .feat-card h3 {
-            font-size: 16px;
-            margin-bottom: 6px;
-        }
-        
-        .feat-card p {
-            font-size: 13px;
-            line-height: 1.55;
-            color: var(--muted);
-        }
-        
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        
-        .card {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 14px 16px;
-        }
-        
-        .card h3 {
-            font-size: 16px;
-            margin-bottom: 6px;
-        }
-        
-        .card p {
-            font-size: 13px;
-            line-height: 1.55;
-            color: var(--muted);
-        }
-        
-        .card .ex {
-            margin-top: 8px;
-            padding: 8px 10px;
-            background: rgba(10, 100, 100, 0.06);
-            border-radius: 8px;
-            border-left: 3px solid var(--coral);
-            font-size: 12px;
-            line-height: 1.5;
-            color: var(--ink);
-        }
-        
-        .mode-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        
-        .mode-table th,
-        .mode-table td {
-            border: 1px solid var(--line);
-            padding: 10px 12px;
-            text-align: left;
-        }
-        
-        .mode-table th {
-            background: rgba(10, 100, 100, 0.08);
-            color: var(--teal);
-            font-weight: 700;
-        }
-        
-        .nl-box {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 14px 18px;
-            font-size: 15px;
-            line-height: 1.6;
-            border-left: 4px solid var(--coral);
-        }
-        
-        .chips {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        
-        .chips span {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 10px 12px;
-            font-size: 13px;
-            color: var(--muted);
-        }
-        
-        .chips strong {
-            color: var(--ink);
-        }
-        
-        .note {
-            font-size: 12px;
-            color: var(--muted);
-            font-family: var(--mono);
-            line-height: 1.5;
-        }
-        
-        .bullet-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-        }
-        
-        .bullet-row span {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 8px 6px;
-            font-size: 11px;
-            text-align: center;
-            color: var(--muted);
-            line-height: 1.4;
-        }
-        
-        .bullet-row strong {
-            color: var(--ink);
-            display: block;
-        }
-        
-        .cta {
-            background: linear-gradient(135deg, var(--teal), #085050);
-            color: #fff;
-            border-radius: 10px;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .cta strong {
-            font-family: var(--display);
-            font-size: 18px;
-        }
-        
-        .cta code {
-            font-family: var(--mono);
-            font-size: 11px;
-            background: rgba(255, 255, 255, 0.12);
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
-        
-        .key-banner {
-            background: linear-gradient(135deg, rgba(217, 78, 43, 0.12), rgba(10, 100, 100, 0.1));
-            border: 1px solid rgba(217, 78, 43, 0.35);
-            border-left: 4px solid var(--coral);
-            border-radius: 10px;
-            padding: 12px 16px;
-            font-size: 14px;
-            line-height: 1.55;
-            color: var(--ink);
-        }
-        
-        .key-banner strong {
-            color: var(--coral);
-        }
-        
-        .key-banner a {
-            color: var(--teal);
-            font-family: var(--mono);
-            font-weight: 500;
-            text-decoration: none;
-        }
-        
-        .setup-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .setup-step {
-            display: grid;
-            grid-template-columns: 28px 1fr;
-            gap: 10px;
-            align-items: start;
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 12px 14px;
-            font-size: 13px;
-            line-height: 1.5;
-            color: var(--muted);
-        }
-        
-        .setup-step .num {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: var(--teal);
-            color: #fff;
-            font-family: var(--display);
-            font-size: 15px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .setup-step strong {
-            color: var(--ink);
-            display: block;
-            margin-bottom: 2px;
-        }
-        
-        .setup-step a {
-            color: var(--teal);
-            font-family: var(--mono);
-            text-decoration: none;
-        }
-        
         .hint {
-            text-align: center;
-            font-family: var(--mono);
-            font-size: 12px;
-            color: #888;
+          display: none;
         }
-        
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                gap: 0;
-            }
-            .frame {
-                box-shadow: none;
-                page-break-after: always;
-            }
-            .hint {
-                display: none;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
-    <p class="hint">宽 1080px · 高度随内容 · 宽图同页叠放 · 共 9 屏 · 逐块截图</p>
+  <body>
+    <p class="hint">
+      宽 1080px · 高度随内容 · 宽图同页叠放 · 共 9 屏 · 逐块截图
+    </p>
 
     <!-- 1 封面 -->
     <section class="frame">
-        <div class="mesh"></div>
-        <div class="grain"></div>
-        <div class="inner">
-            <div class="tag">Cursor Skill · RollingGo</div>
-            <h1>flight-monitorskill</h1>
-            <p class="sub">安装 Skill 后，用自然语言描述需求 → 穷举 RollingGo 报价 → 生成交互式 HTML 报告。</p>
-            <div class="key-banner">
-                <strong>使用前请先申请 Key：</strong>前往 <a href="https://rollinggo.store/">rollinggo.store</a> 申请 RollingGo MCP Key 并配置；完成后可 <strong>skills.sh 安装</strong>，或到 <a href="https://github.com/sxyfe/skills">GitHub</a> 下载 Skill 源码。
-            </div>
-            <div class="pill-row">
-                <span class="pill">Cursor / Claude Code Skill</span>
-                <span class="pill">往返 + 开口程</span>
-                <span class="pill">精简 / 全量穷举</span>
-                <span class="pill">skills.sh 安装</span>
-                <span class="pill">GitHub 源码</span>
-            </div>
-            <div class="stat-row cols3">
-                <div class="stat-box">
-                    <div class="val teal">14,170</div>
-                    <div class="lbl">全量命中</div>
-                </div>
-                <div class="stat-box">
-                    <div class="val">¥2,450</div>
-                    <div class="lbl">最低 · 吉隆坡</div>
-                </div>
-                <div class="stat-box">
-                    <div class="val teal sm">离线 HTML</div>
-                    <div class="lbl">筛选图表联动</div>
-                </div>
-            </div>
-            <div class="feat-grid">
-                <div class="feat-card">
-                    <h3>自然语言查价</h3>
-                    <p>Skill 解析日期窗、出发地、国家、预算、停留天数。</p>
-                </div>
-                <div class="feat-card">
-                    <h3>往返 + 开口程</h3>
-                    <p>联票与分段价全覆盖，多城组合一次比完。</p>
-                </div>
-                <div class="feat-card">
-                    <h3>交互式报告</h3>
-                    <p>侧栏筛选联动五图、低价榜与万条明细。</p>
-                </div>
-                <div class="feat-card">
-                    <h3>获取 Skill</h3>
-                    <p>申请 Key 后，skills.sh 一键安装，或从 GitHub 下载源码本地使用。</p>
-                </div>
-            </div>
-            <div class="footer-bar"><span><a href="https://github.com/sxyfe/skills" style="color:var(--teal);text-decoration:none">github.com/sxyfe/skills</a></span><span class="pagenum"></span></div>
+      <div class="mesh"></div>
+      <div class="grain"></div>
+      <div class="inner">
+        <div class="tag">Skill · RollingGo</div>
+        <h1>flight-monitorskill</h1>
+        <p class="sub">
+          安装 Skill 后，用自然语言描述需求 → 穷举 RollingGo 报价 → 生成交互式
+          HTML 报告。
+        </p>
+        <div class="key-banner">
+          <strong>使用前请先申请 Key：</strong>前往
+          <a href="https://rollinggo.store/">rollinggo.store</a> 申请 RollingGo
+          MCP Key 并配置；完成后可 <strong>skills.sh 安装</strong>，或到
+          <a href="https://github.com/sxyfe/skills">GitHub</a> 下载 Skill 源码。
         </div>
+        <div class="pill-row">
+          <span class="pill">Cursor / Claude Code Skill</span>
+          <span class="pill">往返 + 开口程</span>
+          <span class="pill">精简 / 全量穷举</span>
+          <span class="pill">skills.sh 安装</span>
+          <span class="pill">GitHub 源码</span>
+        </div>
+        <div class="stat-row cols3">
+          <div class="stat-box">
+            <div class="val teal">14,170</div>
+            <div class="lbl">全量命中</div>
+          </div>
+          <div class="stat-box">
+            <div class="val">¥2,450</div>
+            <div class="lbl">最低 · 吉隆坡</div>
+          </div>
+          <div class="stat-box">
+            <div class="val teal sm">离线 HTML</div>
+            <div class="lbl">筛选图表联动</div>
+          </div>
+        </div>
+        <div class="feat-grid">
+          <div class="feat-card">
+            <h3>自然语言查价</h3>
+            <p>Skill 解析日期窗、出发地、国家、预算、停留天数。</p>
+          </div>
+          <div class="feat-card">
+            <h3>往返 + 开口程</h3>
+            <p>联票与分段价全覆盖，多城组合一次比完。</p>
+          </div>
+          <div class="feat-card">
+            <h3>交互式报告</h3>
+            <p>侧栏筛选联动五图、低价榜与万条明细。</p>
+          </div>
+          <div class="feat-card">
+            <h3>获取 Skill</h3>
+            <p>
+              申请 Key 后，skills.sh 一键安装，或从 GitHub 下载源码本地使用。
+            </p>
+          </div>
+        </div>
+        <div class="footer-bar">
+          <span
+            ><a
+              href="https://github.com/sxyfe/skills"
+              style="color: var(--teal); text-decoration: none"
+              >github.com/sxyfe/skills</a
+            ></span
+          ><span class="pagenum"></span>
+        </div>
+      </div>
     </section>
 
     <!-- 2 怎么查（纯文字，与截图分离避免空白） -->
     <section class="frame">
-        <div class="mesh"></div>
-        <div class="grain"></div>
-        <div class="inner">
-            <div class="tag">Query · 自然语言</div>
-            <h2>Skill 支持怎么查？</h2>
-            <div class="key-banner">
-                <strong>第一步：</strong>在 <a href="https://rollinggo.store/">rollinggo.store</a> 申请 MCP Key 并配置；然后 skills.sh 安装，或从 <a href="https://github.com/sxyfe/skills">GitHub</a> 下载 Skill 代码。
-            </div>
-            <div class="nl-box">在 Cursor / Claude Code 中对 AI 说：「国庆前后东南亚，京津出发，预算 3000 以内，最少停留 7 天，全量穷举并出报告」</div>
-            <div class="two-col">
-                <div class="card">
-                    <h3>往返联票</h3>
-                    <p>同一去程 + 同一返程，航司打包总价。</p>
-                    <div class="ex">北京 → 吉隆坡 · 吉隆坡 → 北京<br/>标注「联票总价」</div>
-                </div>
-                <div class="card">
-                    <h3>开口程</h3>
-                    <p>去 A→B、回 C→D，出发/返回均在出发地集合内。</p>
-                    <div class="ex">天津 → 马尼拉 · 棉兰 → 天津<br/>北京 → 曼谷 · 普吉 → 天津<br/>标注「分段价」</div>
-                </div>
-            </div>
-            <table class="mode-table">
-                <tr>
-                    <th>模式</th>
-                    <th>场景</th>
-                    <th>说明</th>
-                </tr>
-                <tr>
-                    <td>精简</td>
-                    <td>快速摸底</td>
-                    <td>热门城市，分钟级</td>
-                </tr>
-                <tr>
-                    <td>全量穷举</td>
-                    <td>深度扫价</td>
-                    <td>主要机场 × 日期 × 停留，万级命中</td>
-                </tr>
-            </table>
-            <div class="chips">
-                <span><strong>行程</strong> 全部 / 往返 / 开口程</span>
-                <span><strong>地理</strong> 国家 · 目的地 · 出发城市</span>
-                <span><strong>价格</strong> 双滑块 + 动态分段</span>
-                <span><strong>输出</strong> 离线 report.html</span>
-            </div>
-            <div class="footer-bar"><span>纯查价 · 不含 OTA 下单</span><span class="pagenum"></span></div>
+      <div class="mesh"></div>
+      <div class="grain"></div>
+      <div class="inner">
+        <div class="tag">Query · 自然语言</div>
+        <h2>Skill 支持怎么查？</h2>
+        <div class="key-banner">
+          <strong>第一步：</strong>在
+          <a href="https://rollinggo.store/">rollinggo.store</a> 申请 MCP Key
+          并配置；然后 skills.sh 安装，或从
+          <a href="https://github.com/sxyfe/skills">GitHub</a> 下载 Skill 代码。
         </div>
+        <div class="nl-box">
+          在 Cursor / Claude Code 中对 AI 说：「国庆前后东南亚，京津出发，预算
+          3000 以内，最少停留 7 天，全量穷举并出报告」
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <h3>往返联票</h3>
+            <p>同一去程 + 同一返程，航司打包总价。</p>
+            <div class="ex">
+              北京 → 吉隆坡 · 吉隆坡 → 北京<br />标注「联票总价」
+            </div>
+          </div>
+          <div class="card">
+            <h3>开口程</h3>
+            <p>去 A→B、回 C→D，出发/返回均在出发地集合内。</p>
+            <div class="ex">
+              天津 → 马尼拉 · 棉兰 → 天津<br />北京 → 曼谷 · 普吉 → 天津<br />标注「分段价」
+            </div>
+          </div>
+        </div>
+        <table class="mode-table">
+          <tr>
+            <th>模式</th>
+            <th>场景</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td>精简</td>
+            <td>快速摸底</td>
+            <td>热门城市，分钟级</td>
+          </tr>
+          <tr>
+            <td>全量穷举</td>
+            <td>深度扫价</td>
+            <td>主要机场 × 日期 × 停留，万级命中</td>
+          </tr>
+        </table>
+        <div class="chips">
+          <span><strong>行程</strong> 全部 / 往返 / 开口程</span>
+          <span><strong>地理</strong> 国家 · 目的地 · 出发城市</span>
+          <span><strong>价格</strong> 双滑块 + 动态分段</span>
+          <span><strong>输出</strong> 离线 report.html</span>
+        </div>
+        <div class="footer-bar">
+          <span>纯查价 · 不含 OTA 下单</span><span class="pagenum"></span>
+        </div>
+      </div>
     </section>
 
     <!-- 3 报告总览 -->
     <section class="frame">
-        <div class="mesh"></div>
-        <div class="grain"></div>
-        <div class="inner">
-            <div class="tag">Report · 总览</div>
-            <h2>交互式 HTML 报告 · 侧栏 + 五图联动</h2>
-            <p class="sub">3135 命中 · 往返 100 · 开口程 3035 · 最低 ¥2015</p>
-            <div class="shot"><img src="../output/首页.jpg" alt="报告总览" /></div>
-            <div class="footer-bar"><span>改筛选 → 图表与明细同步刷新</span><span class="pagenum"></span></div>
+      <div class="mesh"></div>
+      <div class="grain"></div>
+      <div class="inner">
+        <div class="tag">Report · 总览</div>
+        <h2>交互式 HTML 报告 · 侧栏 + 五图联动</h2>
+        <p class="sub">3135 命中 · 往返 100 · 开口程 3035 · 最低 ¥2015</p>
+        <div class="shot"><img src="../output/首页.jpg" alt="报告总览" /></div>
+        <div class="footer-bar">
+          <span>改筛选 → 图表与明细同步刷新</span><span class="pagenum"></span>
         </div>
+      </div>
     </section>
 
     <!-- 4 全量穷举案例 -->
     <section class="frame">
-        <div class="mesh"></div>
-        <div class="grain"></div>
-        <div class="inner">
-            <div class="tag">Live · 2026-09-25 ~ 10-07</div>
-            <h2>全量穷举 · 京津 → 印尼 + 马来西亚</h2>
-            <div class="stat-row">
-                <div class="stat-box">
-                    <div class="val">14,170</div>
-                    <div class="lbl">命中</div>
-                </div>
-                <div class="stat-box">
-                    <div class="val teal">¥2,450</div>
-                    <div class="lbl">最低</div>
-                </div>
-                <div class="stat-box">
-                    <div class="val">511</div>
-                    <div class="lbl">往返</div>
-                </div>
-                <div class="stat-box">
-                    <div class="val">13,659</div>
-                    <div class="lbl">开口程</div>
-                </div>
-            </div>
-            <div class="shot"><img src="../output/7.jpg" alt="全量穷举" /></div>
-            <p class="note">开口程 = 去程低价 + 返程低价 · RollingGo 参考价</p>
-            <div class="footer-bar"><span>五图：目的地柱 · 价格分布 · 国家占比 · 停留散点 · 日期热力</span><span class="pagenum"></span></div>
+      <div class="mesh"></div>
+      <div class="grain"></div>
+      <div class="inner">
+        <div class="tag">Live · 2026-09-25 ~ 10-07</div>
+        <h2>全量穷举 · 京津 → 印尼 + 马来西亚</h2>
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="val">14,170</div>
+            <div class="lbl">命中</div>
+          </div>
+          <div class="stat-box">
+            <div class="val teal">¥2,450</div>
+            <div class="lbl">最低</div>
+          </div>
+          <div class="stat-box">
+            <div class="val">511</div>
+            <div class="lbl">往返</div>
+          </div>
+          <div class="stat-box">
+            <div class="val">13,659</div>
+            <div class="lbl">开口程</div>
+          </div>
         </div>
+        <div class="shot"><img src="../output/7.jpg" alt="全量穷举" /></div>
+        <p class="note">开口程 = 去程低价 + 返程低价 · RollingGo 参考价</p>
+        <div class="footer-bar">
+          <span>五图：目的地柱 · 价格分布 · 国家占比 · 停留散点 · 日期热力</span
+          ><span class="pagenum"></span>
+        </div>
+      </div>
     </section>
 
     <!-- 5 筛选控制台 -->
     <section class="frame">
-        <div class="mesh"></div>
-        <div class="grain"></div>
-        <div class="inner">
-            <div class="tag">Filter · 控制台</div>
-            <h2>行程 · 国家 · 目的地 · 价格 · 出发城市</h2>
-            <div class="shot"><img src="../output/8.jpg" alt="筛选控制台" /></div>
-            <div class="chips">
-                <span><strong>行程</strong> 全部 / 往返 / 开口程</span>
-                <span><strong>国家</strong> 按去程目的地归属</span>
-                <span><strong>价格</strong> 双滑块 + 动态分段</span>
-                <span><strong>联动</strong> 图表 + 榜单 + 明细</span>
-            </div>
-            <div class="footer-bar"><span>筛选变更后分页自动重置</span><span class="pagenum"></span></div>
+      <div class="mesh"></div>
+      <div class="grain"></div>
+      <div class="inner">
+        <div class="tag">Filter · 控制台</div>
+        <h2>行程 · 国家 · 目的地 · 价格 · 出发城市</h2>
+        <div class="shot"><img src="../output/8.jpg" alt="筛选控制台" /></div>
+        <div class="chips">
+          <span><strong>行程</strong> 全部 / 往返 / 开口程</span>
+          <span><strong>国家</strong> 按去程目的地归属</span>
+          <span><strong>价格</strong> 双滑块 + 动态分段</span>
+          <span><strong>联动</strong> 图表 + 榜单 + 明细</span>
         </div>
+        <div class="footer-bar">
+          <span>筛选变更后分页自动重置</span><span class="pagenum"></span>
+        </div>
+      </div>
     </section>
 
     <!-- 6 国家 + 价格筛选（两宽图叠放，填满一页） -->
     <section class="frame">
-        <div class="mesh"></div>
-        <div class="grain"></div>
-        <div class="inner">
-            <div class="tag">Filter · 国家 / 价格</div>
-            <h2>按国家缩小 · 价格滑块 · 出发城市</h2>
-            <div class="stack">
-                <div>
-                    <h3>开口程 + 菲律宾 → 柱图 / 分布 / 占比同步更新</h3>
-                    <div class="shot"><img src="../output/4.jpg" alt="国家筛选" /></div>
-                </div>
-                <div>
-                    <h3>¥2000–2600 区间 · 北京 / 天津 / 石家庄 / 太原</h3>
-                    <div class="shot"><img src="../output/6.jpg" alt="价格与出发地" /></div>
-                </div>
+      <div class="mesh"></div>
+      <div class="grain"></div>
+      <div class="inner">
+        <div class="tag">Filter · 国家 / 价格</div>
+        <h2>按国家缩小 · 价格滑块 · 出发城市</h2>
+        <div class="stack">
+          <div>
+            <h3>开口程 + 菲律宾 → 柱图 / 分布 / 占比同步更新</h3>
+            <div class="shot"><img src="../output/4.jpg" alt="国家筛选" /></div>
+          </div>
+          <div>
+            <h3>¥2000–2600 区间 · 北京 / 天津 / 石家庄 / 太原</h3>
+            <div class="shot">
+              <img src="../output/6.jpg" alt="价格与出发地" />
             </div>
-            <div class="footer-bar"><span>泰 · 菲 · 印尼 · 马来 · 日本 等多国</span><span class="pagenum"></span></div>
+          </div>
         </div>
+        <div class="footer-bar">
+          <span>泰 · 菲 · 印尼 · 马来 · 日本 等多国</span
+          ><span class="pagenum"></span>
+        </div>
+      </div>
     </section>
 
     <!-- 7 开口程明细（两宽表叠放） -->
     <section class="frame">
-        <div class="mesh"></div>
-        <div class="grain"></div>
-        <div class="inner">
-            <div class="tag">Result · 明细</div>
-            <h2>路线 · 分段价 · 航班号 · 排序分页</h2>
-            <div class="stack">
-                <div>
-                    <h3>筛选后 765 条 · 天津 → 马尼拉 · 棉兰 → 天津</h3>
-                    <div class="shot"><img src="../output/5.jpg" alt="开口程列表" /></div>
-                </div>
-                <div>
-                    <h3>3135 条 · 价格升序 · 50 条/页 · 分段价明细</h3>
-                    <div class="shot"><img src="../output/3.jpg" alt="明细特写" /></div>
-                </div>
+      <div class="mesh"></div>
+      <div class="grain"></div>
+      <div class="inner">
+        <div class="tag">Result · 明细</div>
+        <h2>路线 · 分段价 · 航班号 · 排序分页</h2>
+        <div class="stack">
+          <div>
+            <h3>筛选后 765 条 · 天津 → 马尼拉 · 棉兰 → 天津</h3>
+            <div class="shot">
+              <img src="../output/5.jpg" alt="开口程列表" />
             </div>
-            <div class="footer-bar"><span>联票总价 / 分段价 · 可订 · 中转详情</span><span class="pagenum"></span></div>
+          </div>
+          <div>
+            <h3>3135 条 · 价格升序 · 50 条/页 · 分段价明细</h3>
+            <div class="shot"><img src="../output/3.jpg" alt="明细特写" /></div>
+          </div>
         </div>
+        <div class="footer-bar">
+          <span>联票总价 / 分段价 · 可订 · 中转详情</span
+          ><span class="pagenum"></span>
+        </div>
+      </div>
     </section>
 
     <!-- 8 图表维度 -->
     <section class="frame">
-        <div class="mesh"></div>
-        <div class="grain"></div>
-        <div class="inner">
-            <div class="tag">Chart · 维度分析</div>
-            <h2>停留天数 × 价格 · 出发日期热力</h2>
-            <p class="sub">气泡大小 = 同价条数 · 哪天走、停几天最便宜</p>
-            <div class="shot"><img src="../output/2.jpg" alt="图表" /></div>
-            <div class="footer-bar"><span>随侧栏筛选联动刷新</span><span class="pagenum"></span></div>
+      <div class="mesh"></div>
+      <div class="grain"></div>
+      <div class="inner">
+        <div class="tag">Chart · 维度分析</div>
+        <h2>停留天数 × 价格 · 出发日期热力</h2>
+        <p class="sub">气泡大小 = 同价条数 · 哪天走、停几天最便宜</p>
+        <div class="shot"><img src="../output/2.jpg" alt="图表" /></div>
+        <div class="footer-bar">
+          <span>随侧栏筛选联动刷新</span><span class="pagenum"></span>
         </div>
+      </div>
     </section>
 
     <!-- 9 万条明细 + 安装 -->
     <section class="frame">
-        <div class="mesh"></div>
-        <div class="grain"></div>
-        <div class="inner">
-            <div class="tag">Table · 全量明细</div>
-            <h2>14,170 条 · 排序 · 分页 · 跳转</h2>
-            <div class="shot"><img src="../output/9.jpg" alt="热力与明细" /></div>
-            <div class="bullet-row">
-                <span><strong>行程</strong>全部/往返/开口</span>
-                <span><strong>地理</strong>国家·目的地</span>
-                <span><strong>价格</strong>滑块+分段</span>
-                <span><strong>明细</strong>排序·分页</span>
-            </div>
-            <div class="setup-steps">
-                <div class="setup-step">
-                    <div class="num">1</div>
-                    <div><strong>申请 RollingGo Key</strong>打开 <a href="https://rollinggo.store/">rollinggo.store</a> 注册并申请 MCP Key</div>
-                </div>
-                <div class="setup-step">
-                    <div class="num">2</div>
-                    <div><strong>配置 Key</strong>写入 <code style="font-family:var(--mono);font-size:11px">.env</code>（<code style="font-family:var(--mono);font-size:11px">ROLLINGGO_API_KEY=mcp_...</code>）或 Cursor MCP 配置</div>
-                </div>
-                <div class="setup-step">
-                    <div class="num">3</div>
-                    <div>
-                        <strong>获取 Skill（二选一）</strong>
-                        <strong style="display:inline;color:var(--teal);font-weight:600">A.</strong> skills.sh 安装：
-                        <code style="font-family:var(--mono);font-size:11px">npx skills add sxyfe/skills@flight-monitor-agent -g -y</code><br/>
-                        <strong style="display:inline;color:var(--teal);font-weight:600">B.</strong> GitHub 下载源码：
-                        <a href="https://github.com/sxyfe/skills">github.com/sxyfe/skills</a> → <code style="font-family:var(--mono);font-size:11px">skills/flight-monitor-agent</code>
-                    </div>
-                </div>
-                <div class="setup-step">
-                    <div class="num">4</div>
-                    <div><strong>开始查价</strong>在 Cursor / Claude Code 中用自然语言描述需求，生成 HTML 报告</div>
-                </div>
-            </div>
-            <div class="cta">
-                <strong>Key → Skill → 查价</strong>
-                <code>rollinggo.store · skills.sh / GitHub</code>
-            </div>
-            <div class="footer-bar"><span><a href="https://rollinggo.store/" style="color:var(--teal);text-decoration:none">rollinggo.store</a> 申请 Key · <a href="https://github.com/sxyfe/skills" style="color:var(--teal);text-decoration:none">GitHub</a> 或 skills.sh 安装</span>
-                <span class="pagenum"></span>
-            </div>
+      <div class="mesh"></div>
+      <div class="grain"></div>
+      <div class="inner">
+        <div class="tag">Table · 全量明细</div>
+        <h2>14,170 条 · 排序 · 分页 · 跳转</h2>
+        <div class="shot"><img src="../output/9.jpg" alt="热力与明细" /></div>
+        <div class="bullet-row">
+          <span><strong>行程</strong>全部/往返/开口</span>
+          <span><strong>地理</strong>国家·目的地</span>
+          <span><strong>价格</strong>滑块+分段</span>
+          <span><strong>明细</strong>排序·分页</span>
         </div>
+        <div class="setup-steps">
+          <div class="setup-step">
+            <div class="num">1</div>
+            <div>
+              <strong>申请 RollingGo Key</strong>打开
+              <a href="https://rollinggo.store/">rollinggo.store</a> 注册并申请
+              MCP Key
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="num">2</div>
+            <div>
+              <strong>配置 Key</strong>写入
+              <code style="font-family: var(--mono); font-size: 11px">.env</code
+              >（<code style="font-family: var(--mono); font-size: 11px"
+                >ROLLINGGO_API_KEY=mcp_...</code
+              >）或 Cursor MCP 配置
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="num">3</div>
+            <div>
+              <strong>获取 Skill（二选一）</strong>
+              <strong
+                style="display: inline; color: var(--teal); font-weight: 600"
+                >A.</strong
+              >
+              skills.sh 安装：
+              <code style="font-family: var(--mono); font-size: 11px"
+                >npx skills add sxyfe/skills@flight-monitor-agent -g -y</code
+              ><br />
+              <strong
+                style="display: inline; color: var(--teal); font-weight: 600"
+                >B.</strong
+              >
+              GitHub 下载源码：
+              <a href="https://github.com/sxyfe/skills"
+                >github.com/sxyfe/skills</a
+              >
+              →
+              <code style="font-family: var(--mono); font-size: 11px"
+                >skills/flight-monitor-agent</code
+              >
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="num">4</div>
+            <div>
+              <strong>开始查价</strong>在 Cursor / Claude Code
+              中用自然语言描述需求，生成 HTML 报告
+            </div>
+          </div>
+        </div>
+        <div class="cta">
+          <strong>Key → Skill → 查价</strong>
+          <code>rollinggo.store · skills.sh / GitHub</code>
+        </div>
+        <div class="footer-bar">
+          <span
+            ><a
+              href="https://rollinggo.store/"
+              style="color: var(--teal); text-decoration: none"
+              >rollinggo.store</a
+            >
+            申请 Key ·
+            <a
+              href="https://github.com/sxyfe/skills"
+              style="color: var(--teal); text-decoration: none"
+              >GitHub</a
+            >
+            或 skills.sh 安装</span
+          >
+          <span class="pagenum"></span>
+        </div>
+      </div>
     </section>
-
-</body>
-
+  </body>
 </html>

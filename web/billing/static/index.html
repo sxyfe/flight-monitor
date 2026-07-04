@@ -1,69 +1,101 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>会员订阅 · Flight Monitor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="static/billing.css" />
-</head>
-<body>
-  <div class="mesh" aria-hidden="true"></div>
-  <header class="site-header">
-    <a class="brand" href="../">Flight <span>Monitor</span></a>
-    <nav class="site-nav">
-      <a href="../">首页</a>
-      <a href="../nl-search/">查价</a>
-      <a href="../flight-watch/">监控</a>
-      <a href="../viz/">雷达</a>
-      <a href="./" class="active">会员</a>
-    </nav>
-    <div class="auth-area" id="authArea">
-      <button type="button" class="btn btn-ghost" id="btnLogin">登录</button>
-      <button type="button" class="btn btn-primary" id="btnRegister">注册试用</button>
-    </div>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>使用说明 · Flight Monitor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="static/billing.css" />
+  </head>
 
-  <main class="page">
-    <p class="tag">订阅 · 支持 Stripe 支付</p>
-    <h1 class="hero-title">选适合你的<br />查价与监控方案</h1>
-    <p class="hero-lead">注册即享 <strong>7 天免费试用</strong>。付费套餐解锁全量穷举、更多监控条数与更高日配额。未配置 Stripe 时本地为 Mock 支付（开发模式）。</p>
+  <body>
+    <div class="mesh" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="../">Flight <span>Monitor</span></a>
+      <nav class="site-nav">
+        <a href="../">首页</a>
+        <a href="../nl-search/">查价</a>
+        <a href="../flight-watch/">监控</a>
+        <a href="../skill/">Skill</a>
+        <a href="./" class="active">说明</a>
+      </nav>
+    </header>
 
-    <div id="accountBanner" class="account-banner hidden"></div>
-    <div id="toast" class="toast hidden"></div>
+    <main class="page">
+      <p class="tag">Flight Monitor · 免费使用</p>
+      <h1 class="hero-title">查价与监控<br />无需登录注册</h1>
+      <p class="hero-lead">
+        本站<strong>在线查价</strong>、<strong>价格矩阵</strong>与<strong
+          >Flight Watch 监控</strong
+        >均可直接使用，不需要注册账户或购买会员。 你只需在查价页配置自己的
+        <a href="https://rollinggo.store/" target="_blank" rel="noopener"
+          >RollingGo API Key</a
+        >
+        即可开始搜索。
+      </p>
 
-    <section class="plans-grid" id="plansGrid"></section>
+      <section class="plans-grid info-grid">
+        <article class="plan-card">
+          <div class="plan-name">在线查价</div>
+          <p class="plan-tagline">自然语言 / 表单 / 价格矩阵</p>
+          <ul class="plan-features">
+            <li>精简与全量穷举搜索</li>
+            <li>往返联票与开口程</li>
+            <li>结果区图表与侧栏筛选</li>
+          </ul>
+          <a class="btn btn-primary" href="../nl-search/">进入查价</a>
+        </article>
+        <article class="plan-card highlight">
+          <div class="plan-name">Flight Watch</div>
+          <p class="plan-tagline">降价监控 · 飞书 / 微信通知</p>
+          <ul class="plan-features">
+            <li>往返 / 开口程 / 多段规则</li>
+            <li>定时 RollingGo 查价</li>
+            <li>达美开口预设一键导入</li>
+          </ul>
+          <a class="btn btn-primary" href="../flight-watch/">进入监控</a>
+        </article>
+        <article class="plan-card">
+          <div class="plan-name">Skill</div>
+          <p class="plan-tagline">IDE 内自然语言查价报告</p>
+          <ul class="plan-features">
+            <li>与 Web 同源搜索引擎</li>
+            <li>暖色 HTML 分页报告</li>
+            <li>精简 / 全量穷举模式</li>
+          </ul>
+          <a class="btn btn-primary" href="../skill/">查看 Skill</a>
+        </article>
+      </section>
 
-    <section class="faq">
-      <h2>常见问题</h2>
-      <dl>
-        <dt>免费试用包含什么？</dt>
-        <dd>7 天内每日 30 次搜索、1 条监控、价格矩阵；不含全量穷举。</dd>
-        <dt>如何支付？</dt>
-        <dd>生产环境接入 Stripe（支持信用卡/部分本地方式）。配置 <code>STRIPE_SECRET_KEY</code> 后生效；否则点击购买将走 Mock 即时开通。</dd>
-        <dt>月度/年度如何续费？</dt>
-        <dd>Stripe 订阅自动续费；可在账户页取消，当前周期内仍可使用。</dd>
-        <dt>永久会员会过期吗？</dt>
-        <dd>不会。一次付费长期享有对应配额（公平使用策略保留）。</dd>
-      </dl>
-    </section>
-  </main>
-
-  <dialog id="authDialog" class="auth-dialog">
-    <form method="dialog" id="authForm">
-      <h3 id="authTitle">登录</h3>
-      <label>邮箱<input type="email" id="authEmail" required autocomplete="email" /></label>
-      <label>密码<input type="password" id="authPassword" required minlength="6" autocomplete="current-password" /></label>
-      <p class="auth-hint" id="authHint"></p>
-      <div class="dialog-actions">
-        <button type="button" class="btn btn-ghost" id="authCancel">取消</button>
-        <button type="submit" class="btn btn-primary" id="authSubmit">确认</button>
-      </div>
-    </form>
-  </dialog>
-
-  <script src="static/billing.js"></script>
-</body>
+      <section class="faq">
+        <h2>常见问题</h2>
+        <dl>
+          <dt>需要注册或付费吗？</dt>
+          <dd>不需要。Web 查价与监控工具免费开放，直接在对应页面使用即可。</dd>
+          <dt>RollingGo Key 从哪里获取？</dt>
+          <dd>
+            前往
+            <a href="https://rollinggo.store/" target="_blank" rel="noopener"
+              >rollinggo.store</a
+            >
+            申请；Key 仅保存在本机设置页，不会上传给开发者。
+          </dd>
+          <dt>LLM Key 是必填的吗？</dt>
+          <dd>
+            可选。未配置时使用规则回退解析自然语言；配置后可提升复杂意图的解析准确度。
+          </dd>
+          <dt>展示的价格能直接订票吗？</dt>
+          <dd>
+            否。展示价为 RollingGo 成人含税合计参考价，不含 OTA
+            跳转，仅供比价决策。
+          </dd>
+        </dl>
+      </section>
+    </main>
+  </body>
 </html>

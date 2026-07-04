@@ -64,32 +64,13 @@ body {
 .plan-tagline { font-size: 0.85rem; color: var(--muted); }
 .plan-features { list-style: none; font-size: 0.85rem; line-height: 1.8; color: var(--muted); flex: 1; }
 .plan-features li::before { content: "✓ "; color: var(--ok); }
-.account-banner {
-  background: rgba(13, 110, 110, 0.08); border: 1px solid rgba(13, 110, 110, 0.2);
-  border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; font-size: 0.9rem;
-}
-.account-banner strong { color: var(--teal); }
+.info-grid .plan-card .btn { margin-top: auto; text-align: center; text-decoration: none; display: inline-block; }
+.hero-lead a { color: var(--teal); }
 .faq { margin-top: 48px; }
 .faq h2 { font-family: Fraunces, serif; margin-bottom: 16px; }
 .faq dt { font-weight: 600; margin-top: 12px; }
 .faq dd { color: var(--muted); margin-left: 0; margin-top: 4px; line-height: 1.6; font-size: 0.9rem; }
-.auth-dialog {
-  border: none; border-radius: 16px; padding: 0; max-width: 400px; width: calc(100% - 32px);
-  box-shadow: var(--shadow);
-}
-.auth-dialog::backdrop { background: rgba(26, 26, 26, 0.35); }
-.auth-dialog form { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
-.auth-dialog label { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; }
-.auth-dialog input {
-  padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 1rem;
-}
-.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
-.auth-hint { font-size: 0.8rem; color: var(--coral); min-height: 1.2em; }
-.toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 0.88rem; z-index: 100;
-}
-.hidden { display: none !important; }
+.faq dd a { color: var(--teal); }
 @media (max-width: 640px) {
   .site-header { flex-direction: column; align-items: flex-start; }
   .site-nav { overflow-x: auto; flex-wrap: nowrap; max-width: 100%; }

@@ -436,8 +436,7 @@ createApp({
       <nav class="header-nav" aria-label="站点导航">
         <a :href="siteHref('/')">首页</a>
         <a :href="siteHref('/nl-search/')">查价</a>
-        <a :href="siteHref('/viz/')">雷达</a>
-        <a :href="siteHref('/billing/')">会员</a>
+        <a :href="siteHref('/billing/')">说明</a>
         <span class="header-nav-active">监控</span>
       </nav>
       <span class="muted">Web · 飞书/微信通知</span>

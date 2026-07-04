@@ -19,20 +19,35 @@ pip install -r requirements.txt
 
 ## 启动
 
-项目根目录：
+项目根目录（**推荐**：统一网关，与线上一致，含 `/nl-search/`、`/billing/`、`/flight-watch/` 等）：
 
 ```bash
 npm run nl-search:dev
 ```
 
-或直接：
+启动后访问：
+
+| 路径                                | 说明           |
+| ----------------------------------- | -------------- |
+| http://127.0.0.1:8765/              | 官网首页       |
+| http://127.0.0.1:8765/nl-search/    | 查价（本工具） |
+| http://127.0.0.1:8765/billing/      | 使用说明       |
+| http://127.0.0.1:8765/flight-watch/ | 机票监控       |
+| http://127.0.0.1:8765/skill/        | Skill          |
+
+仅调试 nl-search 子应用（无 `/billing/` 等子路径）：
 
 ```bash
 cd web/nl-search
 python3 -m uvicorn server:app --host 127.0.0.1 --port 8765
+# 浏览器：http://127.0.0.1:8765/（/nl-search/ 会重定向到 /）
 ```
 
-浏览器访问：<http://127.0.0.1:8765>
+等价网关命令（自定义端口）：
+
+```bash
+PYTHONPATH=. WEB_ROOT=/nl-search python -m uvicorn web.gateway.server:app --reload --port 7860
+```
 
 ## 配置
 

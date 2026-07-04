@@ -10,32 +10,11 @@ WORKDIR /app
 COPY scripts /app/scripts
 COPY web/nl-search /app/web/nl-search
 COPY web/flight-watch /app/web/flight-watch
-COPY web/exhaustive-viz /app/web/exhaustive-viz
 COPY web/landing /app/web/landing
 COPY web/gateway /app/web/gateway
 COPY web/shared /app/web/shared
 COPY web/billing /app/web/billing
 COPY .cursor/skills/flight-monitor-agent/scripts /app/.cursor/skills/flight-monitor-agent/scripts
-
-RUN python3 <<'PY'
-import json
-import shutil
-from pathlib import Path
-
-p = Path("/app/web/exhaustive-viz/data.json")
-if p.is_symlink():
-    target = p.resolve()
-    p.unlink()
-    if target.is_file():
-        shutil.copy2(target, p)
-    else:
-        p.write_text(
-            json.dumps(
-                {"rt_hits": [], "oj_hits": [], "destinations_by_country": {}, "meta": {}},
-                ensure_ascii=False,
-            )
-        )
-PY
 
 RUN pip install --no-cache-dir -r /app/web/nl-search/requirements.txt \
     && pip install --no-cache-dir -r /app/web/flight-watch/requirements.txt \

@@ -1,152 +1,204 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Flight Monitor — 自然语言 + 穷举引擎，扫全球特价机票。在线查价、穷举雷达、Cursor Skill。" />
-  <title>Flight Monitor · 特价航班查价与穷举</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="site.css" />
-</head>
-<body>
-  <div class="mesh" aria-hidden="true"></div>
-  <div class="grain" aria-hidden="true"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Flight Monitor — 自然语言 + 穷举引擎，扫全球特价机票。在线查价、监控与 Cursor Skill。"
+    />
+    <title>Flight Monitor · 特价航班查价与穷举</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
 
-  <header class="site-header">
-    <a class="brand" href="./">Flight <span>Monitor</span></a>
-    <nav class="site-nav" aria-label="主导航">
-      <a href="./" class="active">首页</a>
-      <a href="nl-search/">在线查价</a>
-      <a href="flight-watch/">监控</a>
-      <a href="viz/">穷举雷达</a>
-      <a href="skill/">Cursor Skill</a>
-      <a href="billing/">会员订阅</a>
-      <a href="nl-search/" class="nav-cta">开始查价</a>
-    </nav>
-  </header>
+  <body>
+    <div class="mesh" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
 
-  <main class="page">
-    <p class="tag">RollingGo · 实时查价</p>
-    <h1 class="hero-title">不猜日期，<br />扫组合找特价。</h1>
-    <p class="hero-lead">
-      Flight Monitor 把<strong>自然语言意图</strong>变成结构化搜索，用穷举引擎覆盖多城、多日期、开口程与往返联票——在线 Web 查价、价格矩阵、监控通知与 Cursor Skill 同源能力。
-    </p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="nl-search/">开始在线查价</a>
-    </div>
+    <header class="site-header">
+      <a class="brand" href="./">Flight <span>Monitor</span></a>
+      <nav class="site-nav" aria-label="主导航">
+        <a href="./" class="active">首页</a>
+        <a href="nl-search/">在线查价</a>
+        <a href="flight-watch/">监控</a>
+        <a href="skill/">Skill</a>
+        <a href="billing/">使用说明</a>
+        <a href="nl-search/" class="nav-cta">开始查价</a>
+      </nav>
+    </header>
 
-    <div class="product-grid">
-      <article class="product-card">
-        <p class="card-tag">WEB · 主产品</p>
-        <h2 class="card-title">自然语言查价</h2>
-        <p class="card-desc">
-          中文描述出发地、目的地与日期窗（如「国庆前后东南亚」），支持表单编辑、价格矩阵与精简/全量穷举。结果区含 Chart.js 图表、侧栏筛选与分页列表。
-        </p>
-        <a class="card-link" href="nl-search/">进入 nl-search →</a>
-      </article>
-      <article class="product-card">
-        <p class="card-tag">WATCH · 监控</p>
-        <h2 class="card-title">Flight Watch</h2>
-        <p class="card-desc">
-          独立 Web 监控：往返/开口程/多段 Watch 规则，定时 RollingGo 查价，降价时飞书或<strong>微信（PushPlus）</strong>推送。含达美开口 15 条预设。
-        </p>
-        <a class="card-link" href="flight-watch/">进入监控 →</a>
-      </article>
-      <article class="product-card dark">
-        <p class="card-tag">VIZ · 数据视图</p>
-        <h2 class="card-title">穷举特价雷达</h2>
-        <p class="card-desc">
-          多维筛选控制台：国家、目的地、价格区间、行程类型。支持读取在线查价结果（search_id 联动）或静态穷举快照。
-        </p>
-        <a class="card-link" href="viz/">进入雷达 →</a>
-      </article>
-      <article class="product-card">
-        <p class="card-tag">CURSOR · 开发者</p>
-        <h2 class="card-title">flight-monitor-agent</h2>
-        <p class="card-desc">
-          在 Cursor 里用自然语言查价，输出暖色 HTML 分页报告。精简模式日常扫价，全量穷举深度挖掘。纯查价 Skill，不含桌面监控。
-        </p>
-        <a class="card-link" href="skill/">安装与说明 →</a>
-      </article>
-    </div>
-
-    <h2 class="section-title">价格矩阵 · 一眼扫日期组合</h2>
-    <p class="section-lead">去程 × 返程二维热力格，支持独立日期范围；移动端可左右滑动查看。</p>
-    <div class="screenshot-gallery">
-      <figure class="screenshot-item">
-        <img src="assets/screenshots/matrix-summary.png" alt="多路线最低价汇总与普吉价格矩阵" loading="lazy" width="960" height="540" />
-        <figcaption>路线汇总 + 北京→普吉矩阵</figcaption>
-      </figure>
-      <figure class="screenshot-item">
-        <img src="assets/screenshots/matrix-manila.png" alt="北京至马尼拉价格矩阵" loading="lazy" width="960" height="540" />
-        <figcaption>北京 → 马尼拉 · 最佳 ¥1,860</figcaption>
-      </figure>
-      <figure class="screenshot-item screenshot-mobile">
-        <img src="assets/screenshots/matrix-krabi-mobile.png" alt="移动端北京至甲米价格矩阵" loading="lazy" width="390" height="844" />
-        <figcaption>移动端 · 北京 → 甲米</figcaption>
-      </figure>
-    </div>
-
-    <h2 class="section-title">三步完成一次查价</h2>
-    <div class="steps">
-      <div class="step">
-        <p class="step-num">01</p>
-        <h3>说意图</h3>
-        <p>自然语言或表单：多出发地、多国目的地、停留天数、开口程/往返。</p>
+    <main class="page">
+      <p class="tag">RollingGo · 实时查价</p>
+      <h1 class="hero-title">不猜日期，<br />扫组合找特价。</h1>
+      <p class="hero-lead">
+        Flight Monitor
+        把<strong>自然语言意图</strong>变成结构化搜索，用穷举引擎覆盖多城、多日期、开口程与往返联票——在线
+        Web 查价、价格矩阵、监控通知与 Skill 同源能力。
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="nl-search/">开始在线查价</a>
       </div>
-      <div class="step">
-        <p class="step-num">02</p>
-        <h3>选模式</h3>
-        <p>精简模式快速扫热门城市；全量穷举覆盖配置内全部组合。</p>
+
+      <div class="product-grid">
+        <article class="product-card">
+          <p class="card-tag">WEB · 主产品</p>
+          <h2 class="card-title">自然语言查价</h2>
+          <p class="card-desc">
+            中文描述出发地、目的地与日期窗（如「国庆前后东南亚」），支持表单编辑、价格矩阵与精简/全量穷举。结果区含
+            Chart.js 图表、侧栏筛选与分页列表。
+          </p>
+          <a class="card-link" href="nl-search/">进入 nl-search →</a>
+        </article>
+        <article class="product-card">
+          <p class="card-tag">WATCH · 监控</p>
+          <h2 class="card-title">Flight Watch</h2>
+          <p class="card-desc">
+            独立 Web 监控：往返/开口程/多段 Watch 规则，定时 RollingGo
+            查价，降价时飞书或<strong>微信（PushPlus）</strong>推送。含达美开口
+            15 条预设。
+          </p>
+          <a class="card-link" href="flight-watch/">进入监控 →</a>
+        </article>
+        <article class="product-card">
+          <p class="card-tag">CURSOR · 开发者</p>
+          <h2 class="card-title">flight-monitor-agent</h2>
+          <p class="card-desc">
+            在 Cursor 里用自然语言查价，输出暖色 HTML
+            分页报告。精简模式日常扫价，全量穷举深度挖掘。纯查价
+            Skill，不含桌面监控。
+          </p>
+          <a class="card-link" href="skill/">安装与说明 →</a>
+        </article>
       </div>
-      <div class="step">
-        <p class="step-num">03</p>
-        <h3>看报告</h3>
-        <p>暖色报告：图表联动、筛选侧栏、航班号/日期/价格明细。</p>
+
+      <h2 class="section-title">价格矩阵 · 一眼扫日期组合</h2>
+      <p class="section-lead">
+        去程 × 返程二维热力格，支持独立日期范围；移动端可左右滑动查看。
+      </p>
+      <div class="screenshot-gallery">
+        <figure class="screenshot-item">
+          <img
+            src="assets/screenshots/matrix-summary.png"
+            alt="多路线最低价汇总与普吉价格矩阵"
+            loading="lazy"
+            width="960"
+            height="540"
+          />
+          <figcaption>路线汇总 + 北京→普吉矩阵</figcaption>
+        </figure>
+        <figure class="screenshot-item">
+          <img
+            src="assets/screenshots/matrix-manila.png"
+            alt="北京至马尼拉价格矩阵"
+            loading="lazy"
+            width="960"
+            height="540"
+          />
+          <figcaption>北京 → 马尼拉 · 最佳 ¥1,860</figcaption>
+        </figure>
+        <figure class="screenshot-item screenshot-mobile">
+          <img
+            src="assets/screenshots/matrix-krabi-mobile.png"
+            alt="移动端北京至甲米价格矩阵"
+            loading="lazy"
+            width="390"
+            height="844"
+          />
+          <figcaption>移动端 · 北京 → 甲米</figcaption>
+        </figure>
       </div>
-    </div>
 
-    <h2 class="section-title">会员订阅</h2>
-    <p class="section-lead">注册即享 7 天免费试用；付费解锁全量穷举、更多监控条数与更高日配额。支持 Stripe 支付（未配置时开发环境 Mock 即时开通）。</p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="billing/">查看套餐与订阅</a>
-    </div>
-    <ul class="feature-list">
-      <li>免费试用 · 一周 · 两周 · 月度 · 年度 · 永久，六档可选</li>
-      <li>查价与监控按套餐限制日搜索次数与 Watch 条数</li>
-      <li>月度/年度 Stripe 订阅自动续费，账户页可取消</li>
-    </ul>
+      <h2 class="section-title">三步完成一次查价</h2>
+      <div class="steps">
+        <div class="step">
+          <p class="step-num">01</p>
+          <h3>说意图</h3>
+          <p>自然语言或表单：多出发地、多国目的地、停留天数、开口程/往返。</p>
+        </div>
+        <div class="step">
+          <p class="step-num">02</p>
+          <h3>选模式</h3>
+          <p>精简模式快速扫热门城市；全量穷举覆盖配置内全部组合。</p>
+        </div>
+        <div class="step">
+          <p class="step-num">03</p>
+          <h3>看报告</h3>
+          <p>暖色报告：图表联动、筛选侧栏、航班号/日期/价格明细。</p>
+        </div>
+      </div>
 
-    <h2 class="section-title">监控与通知</h2>
-    <p class="section-lead">Flight Watch 支持达美开口预设一键导入、筛选排序监控列表，降价时飞书或微信 PushPlus 推送。</p>
-    <ul class="feature-list">
-      <li>监控列表：按启用状态筛选、按价格/名称/最近查价排序，低价命中高亮</li>
-      <li>预设库：预览航段 → 导入并编辑 → 补全日期后启用</li>
-    </ul>
+      <h2 class="section-title">免费使用</h2>
+      <p class="section-lead">
+        在线查价、价格矩阵与 Flight Watch
+        监控均可直接使用，无需注册或购买会员。自备 RollingGo API Key 即可开始。
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="nl-search/">开始查价</a>
+        <a class="btn btn-ghost" href="billing/">查看说明</a>
+      </div>
 
-    <h2 class="section-title">核心能力</h2>
-    <ul class="feature-list">
-      <li>往返联票 + 开口程（去程 A→B、返程 C→D，出发/返回均在出发地集合内）</li>
-      <li>「国庆」→ 10-01~10-07；「国庆前后」→ 9-28~10-10 等规则解析</li>
-      <li>机场中文搜索 + 城市/机场编码选择，路线优先中文城市名</li>
-      <li>查价完成后可一键跳转<strong>穷举雷达</strong>多维可视化（与 nl-search 实时联动）</li>
-      <li>Flight Watch 支持飞书 + 微信 PushPlus 降价通知，达美开口 15 条预设一键导入</li>
-    </ul>
+      <h2 class="section-title">监控与通知</h2>
+      <p class="section-lead">
+        Flight Watch
+        支持达美开口预设一键导入、筛选排序监控列表，降价时飞书或微信 PushPlus
+        推送。
+      </p>
+      <ul class="feature-list">
+        <li>
+          监控列表：按启用状态筛选、按价格/名称/最近查价排序，低价命中高亮
+        </li>
+        <li>预设库：预览航段 → 导入并编辑 → 补全日期后启用</li>
+      </ul>
 
-    <p class="note">
-      查价需自备 <a href="https://rollinggo.store/" target="_blank" rel="noopener">RollingGo API Key</a>（Web 在设置页配置，Skill 写入 <code>.env</code>）。展示价为成人含税合计参考价，无 OTA 跳转。
-    </p>
-  </main>
+      <h2 class="section-title">核心能力</h2>
+      <ul class="feature-list">
+        <li>
+          往返联票 + 开口程（去程 A→B、返程 C→D，出发/返回均在出发地集合内）
+        </li>
+        <li>「国庆」→ 10-01~10-07；「国庆前后」→ 9-28~10-10 等规则解析</li>
+        <li>机场中文搜索 + 城市/机场编码选择，路线优先中文城市名</li>
+        <li>
+          Flight Watch 支持飞书 + 微信 PushPlus 降价通知，达美开口 15
+          条预设一键导入
+        </li>
+      </ul>
 
-  <footer class="site-footer">
-    <p>
-      Flight Monitor ·
-      <a href="https://github.com/sxyfe/flight-monitor" target="_blank" rel="noopener">GitHub</a> ·
-      <a href="https://rollinggo.store/" target="_blank" rel="noopener">RollingGo</a> ·
-      <a href="https://www.xiaohongshu.com/user/profile/6236bc560000000021025eba" target="_blank" rel="noopener">寻屿 · 小红书</a>
-    </p>
-  </footer>
-</body>
+      <p class="note">
+        查价需自备
+        <a href="https://rollinggo.store/" target="_blank" rel="noopener"
+          >RollingGo API Key</a
+        >（Web 在设置页配置，Skill 写入
+        <code>.env</code>）。展示价为成人含税合计参考价，无 OTA 跳转。
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Flight Monitor ·
+        <a
+          href="https://github.com/sxyfe/flight-monitor"
+          target="_blank"
+          rel="noopener"
+          >GitHub</a
+        >
+        ·
+        <a href="https://rollinggo.store/" target="_blank" rel="noopener"
+          >RollingGo</a
+        >
+        ·
+        <a
+          href="https://www.xiaohongshu.com/user/profile/6236bc560000000021025eba"
+          target="_blank"
+          rel="noopener"
+          >寻屿 · 小红书</a
+        >
+      </p>
+    </footer>
+  </body>
 </html>

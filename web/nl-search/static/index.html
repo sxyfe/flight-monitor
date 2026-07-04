@@ -345,11 +345,6 @@
             color: var(--teal);
             font-weight: 600;
         }
-        #btnOpenViz {
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-        }
         
         @media (max-width: 768px) {
             .grid2 {
@@ -502,9 +497,8 @@
             <nav class="site-nav-mini" aria-label="站点导航">
                 <a href="#" id="navHome">首页</a>
                 <a href="#" id="navWatch">监控</a>
-                <a href="#" id="navViz">雷达</a>
                 <a href="#" id="navSkill">Skill</a>
-                <a href="#" id="navBilling">会员</a>
+                <a href="#" id="navBilling">说明</a>
                 <a href="#" id="navNlSearch" class="active">查价</a>
             </nav>
             <div id="entitlementsRow" class="entitlements-row hidden"></div>
@@ -702,7 +696,6 @@
         <section class="card hidden" id="resultsSection">
           <div class="results-toolbar">
             <span class="results-toolbar-label">穷举报告</span>
-            <a class="btn btn-ghost btn-sm hidden" id="btnOpenViz" href="#" target="_blank" rel="noopener">雷达可视化 →</a>
           </div>
           <div class="nl-report" id="reportRoot">
             <header class="hero">

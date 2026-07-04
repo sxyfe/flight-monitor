@@ -30,7 +30,7 @@ def main() -> int:
 
     app = _load_gateway()
     paths = {getattr(r, "path", "") for r in app.routes}
-    required = {"/nl-search", "/flight-watch", "/viz", "/skill", "/billing"}
+    required = {"/nl-search", "/flight-watch", "/skill", "/billing"}
     missing = required - paths
     if missing:
         print("FAIL: 缺少挂载路径", missing)
