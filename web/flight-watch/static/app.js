@@ -7,6 +7,14 @@ const TRIP_LABELS = {
   open_jaw: "开口程",
 };
 
+function todayIsoDate() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 const emptyWatch = () => ({
   name: "",
   enabled: true,
@@ -52,6 +60,8 @@ createApp({
     const listFilter = ref("all");
     const listSort = ref("updated");
     const presetPreview = ref(null);
+    const showAdvancedAlerts = ref(false);
+    const minDate = todayIsoDate();
 
     const filteredWatches = computed(() => {
       let rows = [...watches.value];
@@ -319,18 +329,26 @@ createApp({
             if (dd) dd.remove();
             dd = document.createElement("div");
             dd.className = "airport-dd";
-            (data.items || []).slice(0, 8).forEach((item) => {
-              const row = document.createElement("div");
-              const code = item.airportCode || item.cityCode;
-              row.textContent = `${item.cityName || ""} ${item.airportName || ""} (${code})`;
-              row.onclick = () => {
-                leg[field] = code;
-                inputEl.value = `${item.cityName || code} (${code})`;
-                dd.remove();
-                dd = null;
-              };
-              dd.appendChild(row);
-            });
+            const items = (data.items || []).slice(0, 8);
+            if (!items.length) {
+              const empty = document.createElement("div");
+              empty.className = "airport-dd-empty";
+              empty.textContent = "未搜索到机场";
+              dd.appendChild(empty);
+            } else {
+              items.forEach((item) => {
+                const row = document.createElement("div");
+                const code = item.airportCode || item.cityCode;
+                row.textContent = `${item.cityName || ""} ${item.airportName || ""} (${code})`;
+                row.onclick = () => {
+                  leg[field] = code;
+                  inputEl.value = `${item.cityName || code} (${code})`;
+                  dd.remove();
+                  dd = null;
+                };
+                dd.appendChild(row);
+              });
+            }
             inputEl.parentElement.appendChild(dd);
           } catch (_) {}
         }, 300);
@@ -400,6 +418,8 @@ createApp({
       listFilter,
       listSort,
       presetPreview,
+      showAdvancedAlerts,
+      minDate,
       filteredWatches,
       enabledCount,
       importedPresetIds,
@@ -436,7 +456,6 @@ createApp({
       <nav class="header-nav" aria-label="站点导航">
         <a :href="siteHref('/')">首页</a>
         <a :href="siteHref('/nl-search/')">查价</a>
-        <a :href="siteHref('/billing/')">说明</a>
         <span class="header-nav-active">监控</span>
       </nav>
       <span class="muted">Web · 飞书/微信通知</span>
@@ -529,7 +548,7 @@ createApp({
         </div>
       </div>
       <div v-if="form.trip_mode==='round_trip'" class="field">
-        <label>回程日期</label><input type="date" v-model="form.return_date" />
+        <label>回程日期</label><input type="date" v-model="form.return_date" :min="form.legs[0]?.date || minDate" />
       </div>
       <div v-for="(leg, i) in form.legs" :key="i" class="leg-block">
         <strong>航段 {{ i+1 }}</strong>
@@ -543,7 +562,7 @@ createApp({
             <input :value="leg.to_city" @input="leg.to_city = $event.target.value.toUpperCase()" placeholder="LAX" :ref="el => setupAirportInput(el, leg, 'to_city')" />
           </div>
         </div>
-        <div class="field"><label>日期</label><input type="date" v-model="leg.date" /></div>
+        <div class="field"><label>日期</label><input type="date" v-model="leg.date" :min="minDate" /></div>
         <button v-if="form.legs.length>1 && form.trip_mode!=='one_way' && form.trip_mode!=='round_trip'" class="btn btn-ghost btn-sm" @click="removeLeg(i)">删除航段</button>
       </div>
       <button v-if="form.trip_mode==='multi_leg' || form.trip_mode==='open_jaw'" class="btn btn-ghost btn-sm" @click="addLeg">+ 添加航段</button>
@@ -552,6 +571,17 @@ createApp({
         <div class="field"><label>轮询间隔（小时）</label><input type="number" v-model.number="form.schedule.interval_hours" min="1" /></div>
         <div class="field"><label>销售区 ISO（如 CN/US/NL）</label><input v-model="form.sales_region" placeholder="CN" /></div>
         <div class="field"><label>航司过滤（逗号分隔）</label><input v-model="carriersStr" placeholder="DL,UA" /></div>
+      </div>
+      <div class="advanced-block">
+        <button type="button" class="btn btn-ghost btn-sm advanced-toggle" @click="showAdvancedAlerts = !showAdvancedAlerts">
+          {{ showAdvancedAlerts ? '收起高级告警' : '高级告警设置' }}
+        </button>
+        <div v-show="showAdvancedAlerts" class="advanced-panel grid2">
+          <div class="field"><label>降价金额阈值 ({{ form.currency }})</label><input type="number" v-model.number="form.alerts.drop_abs" min="0" /></div>
+          <div class="field"><label>降价百分比阈值 (%)</label><input type="number" v-model.number="form.alerts.drop_pct" min="0" max="100" step="0.1" /></div>
+          <div class="field"><label>通知冷却（小时）</label><input type="number" v-model.number="form.alerts.cooldown_hours" min="1" /></div>
+          <div class="field"><label>监控截止日期</label><input type="date" v-model="form.schedule.active_until" :min="minDate" /></div>
+        </div>
       </div>
       <div class="field"><label>备注</label><textarea v-model="form.notes" rows="2"></textarea></div>
       <button class="btn btn-primary" :disabled="loading" @click="saveWatch">保存</button>

@@ -10,6 +10,7 @@
     let activeQueryTab = "nl";
     let currentSearchKind = "standard";
     let searchSettings = { soft_limit_enabled: true, soft_query_limit: 500 };
+    let lastCompletedSearchId = null;
 
     const $ = (id) => document.getElementById(id);
 
@@ -48,14 +49,59 @@
 
     async function api(path, opts = {}) {
         const url = typeof window.apiUrl === "function" ? window.apiUrl(path) : path;
-        const res = await fetch(url, {
+        const method = (opts.method || "GET").toUpperCase();
+        const { headers: optHeaders = {}, body, ...restOpts } = opts;
+        const headers = {
+            "Content-Type": "application/json",
+            ...optHeaders,
+        };
+        const fetchOpts = {
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            ...opts,
-        });
+            method,
+            headers,
+            ...restOpts,
+        };
+        if (body !== undefined) {
+            fetchOpts.body = typeof body === "string" ? body : JSON.stringify(body);
+        }
+        if (method === "POST" && !fetchOpts.cache) {
+            fetchOpts.cache = "no-store";
+        }
+        const res = await fetch(url, fetchOpts);
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw { status: res.status, ...data };
         return data;
+    }
+
+    function newClientRequestId() {
+        if (typeof crypto !== "undefined" && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function validateSearchStartResponse(r, options = {}) {
+        if (!r?.search_id) {
+            throw { message: "搜索启动失败：未返回 search_id" };
+        }
+        if (r.stream_url && !r.stream_nonce) {
+            throw { message: "搜索启动失败：缺少 stream_nonce，请硬刷新页面（Cmd+Shift+R）" };
+        }
+        if (options.fromHistory && options.lastSearchId && r.search_id === options.lastSearchId) {
+            throw {
+                message: "再次搜索未创建新任务（search_id 未变化），请硬刷新后重试",
+            };
+        }
+    }
+
+    async function postSearch(body, options = {}) {
+        const clientRequestId = newClientRequestId();
+        return api("/api/search", {
+            method: "POST",
+            cache: "no-store",
+            headers: { "X-Client-Request-Id": clientRequestId },
+            body: { ...body, client_request_id: clientRequestId },
+        });
     }
 
     window.addEventListener("nl-intent-status", (e) => {
@@ -200,7 +246,6 @@
             navHome: href("/"),
             navWatch: href("/flight-watch/"),
             navSkill: href("/skill/"),
-            navBilling: href("/billing/"),
             navNlSearch: href("/nl-search/"),
         };
         Object.entries(links).forEach(([id, url]) => {
@@ -209,35 +254,10 @@
         });
     }
 
-    async function renderEntitlements() {
-        const row = $("entitlementsRow");
-        if (!row) return;
-        try {
-            const ent = await api("/api/entitlements");
-            if (!ent.billing_enabled || ent.unlimited) {
-                row.classList.add("hidden");
-                return;
-            }
-            row.classList.remove("hidden");
-            const href = typeof window.siteHref === "function" ? window.siteHref("/billing/") : "/billing/";
-            if (!ent.authenticated || !ent.plan) {
-                row.innerHTML = `会员：未登录 · <a href="${href}">注册免费试用</a>`;
-                return;
-            }
-            const usage = ent.search_usage_today ?? 0;
-            const limit = ent.search_queries_per_day ?? "—";
-            row.innerHTML = `会员：<strong>${ent.plan_name || ent.plan}</strong> · 今日 ${usage}/${limit} 次 · <a href="${href}">升级</a>`;
-        } catch (_) {
-            row.classList.add("hidden");
-        }
-    }
-
     initSiteNav();
-    renderEntitlements();
 
     $("btnMatrixBack")?.addEventListener("click", () => {
         $("matrixResultsSection")?.classList.add("hidden");
-        $("viewMain")?.classList.remove("hidden");
         switchQueryTab("matrix");
         window.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -251,6 +271,247 @@
             };
         } catch (_) {}
     }
+
+    function saveSearchHistory(kind, intent, extras = {}) {
+        if (!window.SearchHistory?.add || !intent) return;
+        window.SearchHistory.add({
+            kind,
+            searchMode: extras.searchMode || getSearchMode(),
+            intent,
+            originLabels: extras.originLabels || {},
+            destLabels: extras.destLabels || {},
+            dateMode: extras.dateMode || "range",
+            nlQuery: extras.nlQuery || "",
+        });
+    }
+
+    function yieldToUi() {
+        return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+    }
+
+    function shutdownSearchStream() {
+        const es = currentEventSource;
+        currentEventSource = null;
+        currentSearchId = null;
+        if (es) {
+            es.onerror = null;
+            es.close();
+        }
+    }
+
+    async function cancelActiveSearchIfAny() {
+        const sid = currentSearchId;
+        shutdownSearchStream();
+        if (!sid) return;
+        try {
+            await api(`/api/search/${sid}/cancel`, { method: "POST" });
+        } catch (_) {}
+    }
+
+    function clearSearchResultsUi(progressText = "启动搜索…") {
+        offers = [];
+        matrixOffers = [];
+        $("resultsSection")?.classList.add("hidden");
+        $("matrixResultsSection")?.classList.add("hidden");
+        $("progressSection")?.classList.remove("hidden");
+        $("progressBar").style.width = "0%";
+        $("progressText").textContent = progressText;
+        $("progressHits").textContent = "";
+        $("viewMain")?.classList.remove("hidden");
+        const matrixRoot = $("matrixReportRoot");
+        if (matrixRoot) matrixRoot.innerHTML = "";
+        $("progressSection")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function beginSearchUi(kind, progressText) {
+        clearSearchResultsUi(progressText);
+        currentSearchKind = kind;
+        $("btnSearch").disabled = kind === "standard";
+        if ($("btnMatrixSearch")) $("btnMatrixSearch").disabled = kind === "matrix";
+        if ($("btnStopSearch")) $("btnStopSearch").disabled = false;
+    }
+
+    async function launchStandardSearch(intent, mode, est = 0, options = {}) {
+        confirmedIntent = intent;
+        searchMode = mode === "exhaustive" ? "exhaustive" : "smart";
+        await refreshSearchSettings();
+        if (
+            searchSettings.soft_limit_enabled &&
+            searchSettings.soft_query_limit > 0 &&
+            est > searchSettings.soft_query_limit
+        ) {
+            setSearchStatus(
+                `预估 ${est} 次查询，超过软提示阈值 ${searchSettings.soft_query_limit} 次，仍将启动搜索`,
+                "warn"
+            );
+        }
+
+        offers = [];
+        if (!options.skipBeginUi) {
+            beginSearchUi("standard", "启动搜索…");
+        }
+        if (!searchSettings.soft_limit_enabled || !searchSettings.soft_query_limit || est <= searchSettings.soft_query_limit) {
+            setSearchStatus("正在启动搜索…", "ok");
+        }
+
+        try {
+            const r = await postSearch({ intent: confirmedIntent, mode: searchMode }, options);
+            validateSearchStartResponse(r, {
+                fromHistory: options.fromHistory,
+                lastSearchId: lastCompletedSearchId,
+            });
+            if (!r.stream_url) {
+                const meta = window.IntentEditorBridge?.getFormMeta?.() || {};
+                saveSearchHistory("standard", confirmedIntent, {
+                    searchMode,
+                    originLabels: meta.originLabels,
+                    destLabels: meta.destLabels,
+                    nlQuery: activeQueryTab === "nl" ? ($("nlQuery")?.value || "").trim() : "",
+                });
+                showResults(r);
+                setSearchStatus("");
+                resetSearchUi();
+                return;
+            }
+            currentSearchId = r.search_id;
+            $("progressText").textContent = `新搜索 ${r.search_id} · 正在启动…`;
+            if (!searchSettings.soft_limit_enabled || !searchSettings.soft_query_limit || est <= searchSettings.soft_query_limit) {
+                setSearchStatus("");
+            }
+            const meta = window.IntentEditorBridge?.getFormMeta?.() || {};
+            saveSearchHistory("standard", confirmedIntent, {
+                searchMode,
+                originLabels: meta.originLabels,
+                destLabels: meta.destLabels,
+                nlQuery: activeQueryTab === "nl" ? ($("nlQuery")?.value || "").trim() : "",
+            });
+            startSearchStream(r, est, "standard");
+        } catch (e) {
+            const errText = formatError(normalizeApiError(e));
+            $("progressText").textContent = errText;
+            setSearchStatus(errText, "err");
+            resetSearchUi();
+        }
+    }
+
+    async function launchMatrixSearch(intent, est = 0, options = {}) {
+        confirmedMatrixIntent = intent;
+        await refreshSearchSettings();
+        if (
+            searchSettings.soft_limit_enabled &&
+            searchSettings.soft_query_limit > 0 &&
+            est > searchSettings.soft_query_limit
+        ) {
+            setMatrixSearchStatus(
+                `预估 ${est} 次查询，超过软提示阈值 ${searchSettings.soft_query_limit} 次，仍将启动搜索`,
+                "warn"
+            );
+        }
+
+        matrixOffers = [];
+        if (!options.skipBeginUi) {
+            beginSearchUi("matrix", "启动矩阵搜索…");
+        }
+        if (!searchSettings.soft_limit_enabled || !searchSettings.soft_query_limit || est <= searchSettings.soft_query_limit) {
+            setMatrixSearchStatus(est ? `预计查询 ${est} 次，正在启动…` : "正在启动矩阵搜索…", "ok");
+        }
+
+        try {
+            const r = await postSearch(
+                {
+                    intent: confirmedMatrixIntent,
+                    search_type: "matrix",
+                },
+                options
+            );
+            validateSearchStartResponse(r, {
+                fromHistory: options.fromHistory,
+                lastSearchId: lastCompletedSearchId,
+            });
+            if (!r.stream_url) {
+                const meta = window.MatrixEditorBridge?.getFormMeta?.() || {};
+                saveSearchHistory("matrix", confirmedMatrixIntent, {
+                    originLabels: meta.originLabels,
+                    destLabels: meta.destLabels,
+                    dateMode: meta.dateMode,
+                });
+                showMatrixResults(r);
+                setMatrixSearchStatus("");
+                resetSearchUi();
+                return;
+            }
+            if (!searchSettings.soft_limit_enabled || !searchSettings.soft_query_limit || est <= searchSettings.soft_query_limit) {
+                setMatrixSearchStatus("");
+            }
+            currentSearchId = r.search_id;
+            $("progressText").textContent = `新搜索 ${r.search_id} · 正在启动…`;
+            const meta = window.MatrixEditorBridge?.getFormMeta?.() || {};
+            saveSearchHistory("matrix", confirmedMatrixIntent, {
+                originLabels: meta.originLabels,
+                destLabels: meta.destLabels,
+                dateMode: meta.dateMode,
+            });
+            startSearchStream(r, est, "matrix");
+        } catch (e) {
+            const err = normalizeApiError(e);
+            let errText = formatError(err);
+            const v = err.validation || err.detail?.validation;
+            if (v?.errors?.length) errText = v.errors.join("；");
+            $("progressText").textContent = errText;
+            setMatrixSearchStatus(errText, "err");
+            resetSearchUi();
+        }
+    }
+
+    async function restoreSearchRecord(record, { autoSearch = false } = {}) {
+        if (!record?.intent) return;
+        const intent = JSON.parse(JSON.stringify(record.intent));
+
+        if (record.kind === "matrix") {
+            if (!window.MatrixEditorBridge?.loadIntent) return;
+            window.MatrixEditorBridge.loadIntent(intent, {
+                originLabels: record.originLabels,
+                destLabels: record.destLabels,
+                dateMode: record.dateMode,
+            });
+            switchQueryTab("matrix");
+            if (!autoSearch) {
+                setMatrixSearchStatus("已加载矩阵条件", "");
+                return;
+            }
+            setMatrixSearchStatus("正在重新搜索…", "ok");
+            await cancelActiveSearchIfAny();
+            beginSearchUi("matrix", "正在重新查价…");
+            await yieldToUi();
+            await launchMatrixSearch(intent, 0, { skipBeginUi: true, fromHistory: true });
+            return;
+        }
+
+        if (record.nlQuery && $("nlQuery")) $("nlQuery").value = record.nlQuery;
+        window.IntentEditorBridge?.loadIntent(intent, null, {
+            originLabels: record.originLabels,
+            destLabels: record.destLabels,
+        });
+        const mode = record.searchMode || "smart";
+        if (record.searchMode && window.SearchModeBridge?.setMode) {
+            window.SearchModeBridge.setMode(mode);
+        }
+        switchQueryTab(autoSearch ? "form" : record.nlQuery ? "nl" : "form");
+        if (!autoSearch) {
+            setSearchStatus("已加载搜索条件", "");
+            return;
+        }
+        setSearchStatus("正在重新搜索…", "ok");
+        await cancelActiveSearchIfAny();
+        beginSearchUi("standard", "正在重新查价…");
+        await yieldToUi();
+        await launchStandardSearch(intent, mode, 0, { skipBeginUi: true, fromHistory: true });
+    }
+
+    window.SearchHistoryBridge = {
+        rerun: restoreSearchRecord,
+        refresh: () => window.SearchHistory?.renderPanel?.(),
+    };
 
     function resetSearchUi() {
         currentSearchId = null;
@@ -277,7 +538,12 @@
     $("tabMatrix").onclick = () => switchQueryTab("matrix");
 
     function finishSearch(data, cancelled = false) {
-        if (currentSearchKind === "matrix") {
+        if (currentSearchId) lastCompletedSearchId = currentSearchId;
+        const kind =
+            data?.meta?.search_type === "matrix" || currentSearchKind === "matrix"
+                ? "matrix"
+                : "standard";
+        if (kind === "matrix") {
             finishMatrixSearch(data, cancelled);
             return;
         }
@@ -298,7 +564,6 @@
 
     function showMatrixResults(data, hideProgress = true) {
         matrixOffers = data.offers || [];
-        confirmedMatrixIntent = confirmedMatrixIntent || data.intent || null;
         window.MatrixView ?.render({
             offers: matrixOffers,
             intent: confirmedMatrixIntent,
@@ -306,10 +571,10 @@
             stats: data.stats || {},
             pricingWarning: data.pricing_warning,
         });
-        $("matrixResultsSection") ?.classList.remove("hidden");
-        $("resultsSection") ?.classList.add("hidden");
-        $("viewMain")?.classList.add("hidden");
-        if (hideProgress) $("progressSection") ?.classList.add("hidden");
+        $("matrixResultsSection")?.classList.remove("hidden");
+        $("resultsSection")?.classList.add("hidden");
+        $("viewMain")?.classList.remove("hidden");
+        if (hideProgress) $("progressSection")?.classList.add("hidden");
     }
 
     function finishMatrixSearch(data, cancelled = false) {
@@ -323,7 +588,26 @@
                 "warn"
             );
         } else {
-            setMatrixSearchStatus("", "");
+            const count = (data.offers || []).length;
+            const stats = data.stats || {};
+            const total = Number(stats.total_queries || 0);
+            const errors = Number(stats.errors || 0);
+            if (!count && total > 0 && errors >= total) {
+                const sample =
+                    data.meta?.sample_error || data.stats?.sample_error || "";
+                setMatrixSearchStatus(
+                    sample
+                        ? `查价完成：${total} 次查询均未得到有效价格（${sample}）`
+                        : `查价完成：${total} 次查询均未得到有效价格，请检查 API Key 或稍后重试`,
+                    "err"
+                );
+            } else if (!count && total > 0) {
+                setMatrixSearchStatus(`查价完成，暂无命中（已查询 ${total} 次）`, "warn");
+            } else if (!count) {
+                setMatrixSearchStatus("查价完成，暂无命中", "warn");
+            } else {
+                setMatrixSearchStatus("", "");
+            }
         }
         resetSearchUi();
     }
@@ -384,8 +668,7 @@
         if (!err || (!err.message && !err.detail && !err.code)) return "搜索失败";
         if (typeof err.message === "string") return err.message;
         if (err.code === "LOGIN_REQUIRED" || err.code === "SUBSCRIPTION_REQUIRED" || err.code === "QUOTA_EXCEEDED") {
-            const up = err.upgrade_url || (typeof window.siteHref === "function" ? window.siteHref("/billing/") : "/billing/");
-            return `${err.message || "需要会员"}（订阅：${up}）`;
+            return err.message || "当前无法完成搜索";
         }
         if (typeof err.detail === "string") return err.detail;
         if (err.detail && typeof err.detail.message === "string") return err.detail.message;
@@ -396,10 +679,11 @@
         }
     }
 
-    function formatProgressText(p) {
+    function formatProgressText(p, searchId) {
         const done = Number(p ?.done ?? 0);
         const total = Number(p ?.total ?? 0);
-        return `已查询 ${done}/${total} 次`;
+        const idPart = searchId ? `新搜索 ${searchId} · ` : "";
+        return `${idPart}已查询 ${done}/${total} 次`;
     }
 
     function formatProgressHits(p, kind) {
@@ -468,19 +752,29 @@
     }
 
     function startSearchStream(r, est, kind) {
-        currentSearchId = r.search_id;
+        shutdownSearchStream();
+
+        const boundSearchId = r.search_id;
+        currentSearchId = boundSearchId;
         currentSearchKind = kind;
+        const isActive = () => currentSearchId === boundSearchId;
+
+        const streamPath = r.stream_nonce
+            ? `${r.stream_url}?nonce=${encodeURIComponent(r.stream_nonce)}`
+            : r.stream_url;
         const es = new EventSource(
-            typeof window.apiUrl === "function" ? window.apiUrl(r.stream_url) : r.stream_url
+            typeof window.apiUrl === "function" ? window.apiUrl(streamPath) : streamPath
         );
         currentEventSource = es;
         es.addEventListener("progress", (e) => {
+            if (!isActive()) return;
             const p = JSON.parse(e.data);
             $("progressBar").style.width = (p.total ? (p.done / p.total) * 100 : 0) + "%";
-            $("progressText").textContent = formatProgressText(p);
+            $("progressText").textContent = formatProgressText(p, boundSearchId);
             $("progressHits").textContent = formatProgressHits(p, kind);
         });
         es.addEventListener("offer", (e) => {
+            if (!isActive()) return;
             const offer = JSON.parse(e.data);
             if (kind === "matrix") {
                 matrixOffers.push(offer);
@@ -491,14 +785,28 @@
             }
         });
         es.addEventListener("completed", (e) => {
+            if (!isActive()) {
+                es.close();
+                return;
+            }
             es.close();
+            if (currentEventSource === es) currentEventSource = null;
             finishSearch(JSON.parse(e.data), false);
         });
         es.addEventListener("cancelled", (e) => {
+            if (!isActive()) {
+                es.close();
+                return;
+            }
             es.close();
+            if (currentEventSource === es) currentEventSource = null;
             finishSearch(JSON.parse(e.data), true);
         });
         es.addEventListener("error", (e) => {
+            if (!isActive()) {
+                es.close();
+                return;
+            }
             let errText = "搜索失败";
             if (e.data) {
                 try {
@@ -510,9 +818,10 @@
                 }
             }
             es.close();
+            if (currentEventSource === es) currentEventSource = null;
             const hitList = kind === "matrix" ? matrixOffers : offers;
             if (hitList.length) {
-                finishSearch({ offers: [...hitList], stats: {}, meta: {} }, false);
+                finishSearch({ offers: [...hitList], stats: {}, meta: { search_type: kind } }, false);
                 const partialMsg = `${errText}，已保留 ${hitList.length} 条命中结果`;
                 if (kind === "matrix") {
                     setMatrixSearchStatus(partialMsg, "warn");
@@ -527,10 +836,15 @@
             resetSearchUi();
         });
         es.onerror = () => {
+            if (!isActive() || es !== currentEventSource) {
+                es.close();
+                return;
+            }
             const hitList = kind === "matrix" ? matrixOffers : offers;
             es.close();
+            currentEventSource = null;
             if (hitList.length) {
-                finishSearch({ offers: [...hitList], stats: {}, meta: {} }, false);
+                finishSearch({ offers: [...hitList], stats: {}, meta: { search_type: kind } }, false);
                 const partialMsg = `搜索连接中断，已保留 ${hitList.length} 条命中结果`;
                 if (kind === "matrix") {
                     setMatrixSearchStatus(partialMsg, "warn");
@@ -576,62 +890,12 @@
             return;
         }
 
-        confirmedIntent = validated.intent;
         searchMode = getSearchMode();
-        await refreshSearchSettings();
         const est =
             searchMode === "exhaustive" ?
             validated.validation ?.estimated_queries_exhaustive :
             validated.validation ?.estimated_queries_smart;
-        if (
-            searchSettings.soft_limit_enabled &&
-            searchSettings.soft_query_limit > 0 &&
-            est > searchSettings.soft_query_limit
-        ) {
-            setSearchStatus(
-                `预估 ${est} 次查询，超过软提示阈值 ${searchSettings.soft_query_limit} 次，仍将启动搜索`,
-                "warn"
-            );
-        }
-
-        offers = [];
-        currentSearchKind = "standard";
-        currentSearchId = null;
-        currentEventSource ?.close();
-        currentEventSource = null;
-        $("progressSection").classList.remove("hidden");
-        $("resultsSection").classList.add("hidden");
-        $("matrixResultsSection") ?.classList.add("hidden");
-        $("progressBar").style.width = "0%";
-        $("progressText").textContent = "启动搜索…";
-        $("progressHits").textContent = "";
-        $("btnSearch").disabled = true;
-        if ($("btnStopSearch")) $("btnStopSearch").disabled = false;
-        if (!searchSettings.soft_limit_enabled || !searchSettings.soft_query_limit || est <= searchSettings.soft_query_limit) {
-            setSearchStatus("正在启动搜索…", "ok");
-        }
-        try {
-            const r = await api("/api/search", {
-                method: "POST",
-                body: JSON.stringify({ intent: confirmedIntent, mode: searchMode }),
-            });
-            if (!r.stream_url) {
-                showResults(r);
-                setSearchStatus("");
-                resetSearchUi();
-                return;
-            }
-            currentSearchId = r.search_id;
-            if (!searchSettings.soft_limit_enabled || !searchSettings.soft_query_limit || est <= searchSettings.soft_query_limit) {
-                setSearchStatus("");
-            }
-            startSearchStream(r, est, "standard");
-        } catch (e) {
-            const errText = formatError(normalizeApiError(e));
-            $("progressText").textContent = errText;
-            setSearchStatus(errText, "err");
-            resetSearchUi();
-        }
+        await launchStandardSearch(validated.intent, searchMode, est || 0);
     }
 
     async function doMatrixSearch() {
@@ -658,64 +922,8 @@
             return;
         }
 
-        confirmedMatrixIntent = validated.intent;
-        await refreshSearchSettings();
         const est = validated.validation ?.estimated_queries_smart || 0;
-        if (
-            searchSettings.soft_limit_enabled &&
-            searchSettings.soft_query_limit > 0 &&
-            est > searchSettings.soft_query_limit
-        ) {
-            setMatrixSearchStatus(
-                `预估 ${est} 次查询，超过软提示阈值 ${searchSettings.soft_query_limit} 次，仍将启动搜索`,
-                "warn"
-            );
-        }
-
-        matrixOffers = [];
-        currentSearchKind = "matrix";
-        currentSearchId = null;
-        currentEventSource ?.close();
-        currentEventSource = null;
-        $("progressSection").classList.remove("hidden");
-        $("resultsSection").classList.add("hidden");
-        $("matrixResultsSection") ?.classList.add("hidden");
-        $("progressBar").style.width = "0%";
-        $("progressText").textContent = "启动矩阵搜索…";
-        $("progressHits").textContent = "";
-        $("btnMatrixSearch").disabled = true;
-        if ($("btnStopSearch")) $("btnStopSearch").disabled = false;
-        if (!searchSettings.soft_limit_enabled || !searchSettings.soft_query_limit || est <= searchSettings.soft_query_limit) {
-            setMatrixSearchStatus(est ? `预计查询 ${est} 次，正在启动…` : "正在启动矩阵搜索…", "ok");
-        }
-
-        try {
-            const r = await api("/api/search", {
-                method: "POST",
-                body: JSON.stringify({
-                    intent: confirmedMatrixIntent,
-                    search_type: "matrix",
-                }),
-            });
-            if (!r.stream_url) {
-                showMatrixResults(r);
-                setMatrixSearchStatus("");
-                resetSearchUi();
-                return;
-            }
-            if (!searchSettings.soft_limit_enabled || !searchSettings.soft_query_limit || est <= searchSettings.soft_query_limit) {
-                setMatrixSearchStatus("");
-            }
-            startSearchStream(r, est, "matrix");
-        } catch (e) {
-            const err = normalizeApiError(e);
-            let errText = formatError(err);
-            const v = err.validation || err.detail ?.validation;
-            if (v ?.errors ?.length) errText = v.errors.join("；");
-            $("progressText").textContent = errText;
-            setMatrixSearchStatus(errText, "err");
-            resetSearchUi();
-        }
+        await launchMatrixSearch(validated.intent, est);
     }
 
     $("btnSearch").onclick = () => doSearch();

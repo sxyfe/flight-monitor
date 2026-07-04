@@ -1,4 +1,4 @@
-"""Flight Monitor 统一 Web 网关：官网 + nl-search + flight-watch + billing。"""
+"""Flight Monitor 统一 Web 网关：官网 + nl-search + flight-watch。"""
 from __future__ import annotations
 
 import importlib.util
@@ -16,6 +16,7 @@ ROOT = WEB.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 os.environ.setdefault("WEB_ROOT", "/nl-search")
+os.environ.setdefault("BILLING_ENABLED", "false")
 
 
 def _load_subapp(module_name: str, app_dir: Path):
@@ -26,13 +27,14 @@ def _load_subapp(module_name: str, app_dir: Path):
     if spec is None or spec.loader is None:
         raise RuntimeError(f"无法加载 {app_dir / 'server.py'}")
     mod = importlib.util.module_from_spec(spec)
+    # importlib 动态加载时模块未入 sys.modules，Pydantic v2 请求体模型无法完成解析
+    sys.modules[module_name] = mod
     spec.loader.exec_module(mod)
     return mod.app
 
 
 nl_app = _load_subapp("nl_search_server", WEB / "nl-search")
 fw_app = _load_subapp("flight_watch_server", WEB / "flight-watch")
-billing_app = _load_subapp("billing_server", WEB / "billing")
 
 app = FastAPI(title="Flight Monitor Web", version="1.1.0")
 LANDING_DIR = WEB / "landing"
@@ -54,12 +56,6 @@ async def flight_watch_redirect():
     return RedirectResponse("/flight-watch/", status_code=302)
 
 
-@app.get("/billing")
-async def billing_redirect():
-    return RedirectResponse("/billing/", status_code=302)
-
-
-app.mount("/billing", billing_app)
 app.mount("/nl-search", nl_app)
 app.mount("/flight-watch", fw_app)
 app.mount("/skill", StaticFiles(directory=SKILL_DIR, html=True), name="skill")

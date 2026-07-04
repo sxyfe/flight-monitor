@@ -7,7 +7,7 @@ from typing import Any
 
 from plans import PLANS, PlanId
 
-BILLING_ENABLED = os.environ.get("BILLING_ENABLED", "true").lower() in ("1", "true", "yes")
+BILLING_ENABLED = os.environ.get("BILLING_ENABLED", "false").lower() in ("1", "true", "yes")
 
 
 @dataclass

@@ -1,6 +1,6 @@
 .matrix-report {
-  --mx-green: hsl(130, 48%, 88%);
-  --mx-red: hsl(0, 62%, 72%);
+  --mx-green: hsl(130, 48%, 72%);
+  --mx-red: hsl(0, 62%, 88%);
   --mx-border: rgba(26, 26, 26, 0.12);
   font-family: "Noto Serif SC", serif;
 }
@@ -48,6 +48,16 @@
   max-width: 280px;
   font-size: 0.75rem;
   color: var(--muted);
+}
+
+.matrix-banner-warn {
+  background: #fff8ee;
+  border: 1px solid rgba(196, 145, 58, 0.35);
+  color: #7a5718;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.88rem;
 }
 
 .matrix-banner-err {

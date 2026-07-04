@@ -190,10 +190,13 @@
           syncQueryFromForm();
         };
 
-        const loadIntent = (intent, nextValidation = null) => {
+        const loadIntent = (intent, nextValidation = null, extra = null) => {
           syncFormFromIntent(intent);
+          if (extra?.originLabels) Object.assign(form.originLabels, extra.originLabels);
+          if (extra?.destLabels) Object.assign(form.destLabels, extra.destLabels);
           validation.value = nextValidation;
           msg.value = "";
+          queryDirty.value = false;
         };
 
         const reparseQuery = async () => {
@@ -301,6 +304,11 @@
           loadIntent,
           validateIntent,
           getQueryString: () => form.queryText,
+          getFormMeta: () => ({
+            originLabels: { ...form.originLabels },
+            destLabels: { ...form.destLabels },
+            queryText: form.queryText,
+          }),
         };
 
         syncQueryFromForm();

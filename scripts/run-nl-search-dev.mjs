@@ -15,17 +15,15 @@ const MAX_PORT_ATTEMPTS = 20;
 const HOST = "127.0.0.1";
 
 const REQUIREMENTS = [
-    path.join(projectRoot, "web", "nl-search", "requirements.txt"),
-    path.join(projectRoot, "web", "flight-watch", "requirements.txt"),
-    path.join(projectRoot, "web", "billing", "requirements.txt"),
+  path.join(projectRoot, "web", "nl-search", "requirements.txt"),
+  path.join(projectRoot, "web", "flight-watch", "requirements.txt"),
 ];
 
 const RELOAD_DIRS = [
     path.join(projectRoot, "web", "gateway"),
     path.join(projectRoot, "web", "nl-search"),
-    path.join(projectRoot, "web", "flight-watch"),
-    path.join(projectRoot, "web", "billing"),
-    path.join(projectRoot, "web", "shared"),
+  path.join(projectRoot, "web", "flight-watch"),
+  path.join(projectRoot, "web", "shared"),
     path.join(projectRoot, "scripts"),
 ];
 
@@ -36,14 +34,14 @@ function ensureVenv() {
             cwd: nlSearchDir,
             stdio: "inherit",
         });
-        if (venvResult.status !== 0) process.exit(venvResult.status ? ? 1);
+        if (venvResult.status !== 0) process.exit(venvResult.status ?? 1);
     }
 
     for (const req of REQUIREMENTS) {
         const pipResult = spawnSync(
             venvPython, ["-m", "pip", "install", "-r", req, "-i", pipIndex], { cwd: nlSearchDir, stdio: "inherit" },
         );
-        if (pipResult.status !== 0) process.exit(pipResult.status ? ? 1);
+        if (pipResult.status !== 0) process.exit(pipResult.status ?? 1);
     }
 }
 
@@ -74,8 +72,7 @@ function printRoutes(base) {
     console.log(`  首页       ${base}/`);
     console.log(`  查价       ${base}/nl-search/`);
     console.log(`  监控       ${base}/flight-watch/`);
-    console.log(`  使用说明   ${base}/billing/`);
-    console.log(`  Skill ${base}/skill/`);
+    console.log(`  Skill      ${base}/skill/`);
     console.log("");
 }
 
@@ -110,12 +107,13 @@ async function main() {
             ...process.env,
             PYTHONPATH: projectRoot,
             WEB_ROOT: "/nl-search",
+            BILLING_ENABLED: "false",
             NL_SEARCH_PORT: String(port),
         },
         stdio: "inherit",
     });
 
-    child.on("exit", (code) => process.exit(code ? ? 1));
+    child.on("exit", (code) => process.exit(code ?? 1));
 }
 
 main().catch((err) => {

@@ -141,6 +141,10 @@ header h1 span { color: var(--coral); }
 }
 .airport-dd div { padding: 8px 10px; cursor: pointer; font-size: 0.85rem; }
 .airport-dd div:hover { background: rgba(13, 110, 110, 0.08); }
+.airport-dd-empty { padding: 8px 10px; font-size: 0.85rem; color: var(--muted); cursor: default; }
+.advanced-block { margin-top: 4px; margin-bottom: 12px; }
+.advanced-toggle { margin-bottom: 4px; }
+.advanced-panel { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); }
 .rel { position: relative; }
 .muted { color: var(--muted); font-size: 0.82rem; }
 .error { color: #b00020; font-size: 0.85rem; margin-top: 8px; }

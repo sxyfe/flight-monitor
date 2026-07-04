@@ -71,11 +71,11 @@
         }
 
         function colorForPrice(price, minP, maxP) {
-            if (maxP <= minP) return "hsl(130, 48%, 88%)";
+            if (maxP <= minP) return "hsl(130, 48%, 72%)";
             const t = Math.max(0, Math.min(1, (price - minP) / (maxP - minP)));
             const h = 130 - t * 130;
             const s = 48 + t * 14;
-            const l = 88 - t * 16;
+            const l = 72 + t * 16;
             return `hsl(${h}, ${s}%, ${l}%)`;
         }
 
@@ -330,6 +330,18 @@
         meta?.pricing_service_message ||
         "查价服务异常";
       banner = `<div class="matrix-banner-err">${detail}${stats?.api_failures ? `（${stats.api_failures} 次查价失败）` : ""}</div>`;
+    } else if (!offers?.length) {
+      const total = Number(stats?.total_queries || 0);
+      const errors = Number(stats?.errors || 0);
+      if (total > 0 && errors >= total) {
+        const sample = meta?.sample_error || stats?.sample_error || "";
+        const hint = sample ? ` 错误示例：${sample}` : "";
+        banner = `<div class="matrix-banner-err">本次查价 ${total} 次均未得到有效价格，矩阵已刷新为空。请检查 RollingGo API Key 或稍后重试。${hint}</div>`;
+      } else if (total > 0) {
+        banner = `<div class="matrix-banner-warn">本次查价已完成（${total} 次），暂无价格命中。</div>`;
+      } else {
+        banner = `<div class="matrix-banner-warn">暂无价格命中。</div>`;
+      }
     }
 
     const cards = routes

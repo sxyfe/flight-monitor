@@ -1332,6 +1332,7 @@ def search_matrix(
     errors = 0
     api_failures = 0
     api_failure_message = ""
+    first_sample_error = ""
     offers: list[dict[str, Any]] = []
     emitted_best: dict[tuple[str, str, str, str], float] = {}
     rt_cache: dict[tuple[str, str, str, str], dict[str, Any] | None] = {}
@@ -1379,9 +1380,11 @@ def search_matrix(
         )
 
     def handle_response(result_kind: str, result_task: Any, data: dict[str, Any]) -> None:
-        nonlocal api_failures, api_failure_message, errors
+        nonlocal api_failures, api_failure_message, errors, first_sample_error
         if "error" in data:
             errors += 1
+            if not first_sample_error:
+                first_sample_error = str(data.get("error") or "")[:200]
         failed, msg = _matrix_process_response(
             result_kind,
             result_task,
@@ -1483,6 +1486,8 @@ def search_matrix(
     )
     finalize_pricing_status(stats, len(offers), done)
     meta = build_matrix_meta(intent, offers)
+    if first_sample_error and errors >= total and total > 0:
+        meta["sample_error"] = first_sample_error
     if api_failures:
         meta["api_failures"] = api_failures
         meta["api_failure_message"] = api_failure_message

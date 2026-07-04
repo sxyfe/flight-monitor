@@ -19,7 +19,7 @@ def billing_available() -> bool:
 
 
 def _enabled() -> bool:
-    return os.environ.get("BILLING_ENABLED", "true").lower() in ("1", "true", "yes")
+    return os.environ.get("BILLING_ENABLED", "false").lower() in ("1", "true", "yes")
 
 
 def get_user_from_request(request) -> str | None:

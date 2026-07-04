@@ -22,7 +22,6 @@ sys.path.insert(0, str(ROOT / "web" / "shared"))
 
 from subscription_gate import (  # noqa: E402
     check_watch_allowed,
-    get_entitlements,
     get_user_from_request,
 )
 
@@ -50,7 +49,7 @@ from store import (  # noqa: E402
 
 HOST = os.environ.get("FLIGHT_WATCH_HOST", "127.0.0.1")
 PORT = int(os.environ.get("FLIGHT_WATCH_PORT", "8767"))
-BILLING_ENABLED = os.environ.get("BILLING_ENABLED", "true").lower() in ("1", "true", "yes")
+BILLING_ENABLED = os.environ.get("BILLING_ENABLED", "false").lower() in ("1", "true", "yes")
 CREDENTIALS_FILE = APP_DIR / ".credentials.local.json"
 PRESETS_FILE = APP_DIR / "presets" / "delta-open-jaw.json"
 STATIC_DIR = APP_DIR / "static"
@@ -262,11 +261,6 @@ def _watch_summary(w) -> dict[str, Any]:
     d["latest_snapshot"] = snap
     return d
 
-
-@app.get("/api/entitlements")
-async def api_entitlements(request: Request):
-    uid = get_user_from_request(request)
-    return get_entitlements(uid)
 
 
 @app.get("/api/watches")

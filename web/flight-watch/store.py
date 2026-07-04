@@ -19,6 +19,15 @@ from models import (
 )
 
 DB_PATH = Path(__file__).parent / "data" / "flight_watch.db"
+_db_initialized = False
+
+
+def _ensure_db() -> None:
+    """网关 mount 子应用时不触发 lifespan，首次访问前确保建表。"""
+    global _db_initialized
+    if not _db_initialized:
+        init_db()
+        _db_initialized = True
 
 
 def _utc_now() -> str:
@@ -94,6 +103,8 @@ def _migrate_user_id(conn: sqlite3.Connection) -> None:
 
 @contextmanager
 def _connect(path: Path | None = None) -> Iterator[sqlite3.Connection]:
+    if path is None:
+        _ensure_db()
     conn = sqlite3.connect(path or DB_PATH)
     conn.row_factory = sqlite3.Row
     try:

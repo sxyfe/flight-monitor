@@ -19,7 +19,7 @@ pip install -r requirements.txt
 
 ## 启动
 
-项目根目录（**推荐**：统一网关，与线上一致，含 `/nl-search/`、`/billing/`、`/flight-watch/` 等）：
+项目根目录（**推荐**：统一网关，与线上一致，含 `/nl-search/`、`/flight-watch/` 等）：
 
 ```bash
 npm run nl-search:dev
@@ -31,11 +31,10 @@ npm run nl-search:dev
 | ----------------------------------- | -------------- |
 | http://127.0.0.1:8765/              | 官网首页       |
 | http://127.0.0.1:8765/nl-search/    | 查价（本工具） |
-| http://127.0.0.1:8765/billing/      | 使用说明       |
 | http://127.0.0.1:8765/flight-watch/ | 机票监控       |
 | http://127.0.0.1:8765/skill/        | Skill          |
 
-仅调试 nl-search 子应用（无 `/billing/` 等子路径）：
+仅调试 nl-search 子应用（无 `/flight-watch/` 等子路径）：
 
 ```bash
 cd web/nl-search

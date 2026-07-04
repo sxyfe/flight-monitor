@@ -18,7 +18,10 @@
     props: {
       modelValue: { type: Array, default: () => [] },
       labels: { type: Object, default: () => ({}) },
-      placeholder: { type: String, default: "城市、机场名或三字码（中文需 RollingGo Key）" },
+      placeholder: {
+        type: String,
+        default: "城市、机场名或三字码；多码用英文逗号分隔如 PEK,PVG,NRT",
+      },
     },
     emits: ["update:modelValue", "update:labels", "dirty"],
     setup(props, { emit }) {
@@ -80,10 +83,90 @@
         }, 280);
       };
 
+      const parseBatchCodes = (text) => {
+        if (!text.includes(",")) return null;
+        const parts = text
+          .split(",")
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean);
+        if (!parts.length || !parts.every((p) => /^[A-Z]{3}$/.test(p))) return null;
+        return parts;
+      };
+
+      const resolveAirportCode = async (code) => {
+        const r = await fetch(window.apiUrl(`/api/airport/search?q=${encodeURIComponent(code)}`));
+        const d = await r.json().catch(() => ({}));
+        const items = (d.items || []).map((item) => ({
+          ...item,
+          label: formatAirportLabel(item),
+        }));
+        if (!items.length) return { item: null, error: d.error || "未搜索到机场" };
+        const exact =
+          items.find(
+            (it) =>
+              (it.cityCode || "").toUpperCase() === code ||
+              (it.airportCode || "").toUpperCase() === code
+          ) || items[0];
+        return { item: exact, error: "" };
+      };
+
+      const batchAddCodes = async (codes) => {
+        apiError.value = "";
+        apiWarning.value = "";
+        loading.value = true;
+        open.value = false;
+        suggestions.value = [];
+        const failed = [];
+        const nextCodes = [...props.modelValue];
+        const nextLabels = { ...props.labels };
+
+        for (const code of codes) {
+          try {
+            const { item, error } = await resolveAirportCode(code);
+            if (!item?.cityCode) {
+              failed.push(`${code}${error ? `（${error}）` : ""}`);
+              continue;
+            }
+            if (nextCodes.includes(item.cityCode)) continue;
+            nextCodes.push(item.cityCode);
+            nextLabels[item.cityCode] = item.cityName || item.cityCode;
+          } catch (_) {
+            failed.push(code);
+          }
+        }
+
+        if (nextCodes.length !== props.modelValue.length) {
+          emit("update:modelValue", nextCodes);
+          emit("update:labels", nextLabels);
+          emit("dirty");
+        }
+
+        keyword.value = "";
+        if (failed.length) {
+          apiError.value = `未识别：${failed.join("、")}`;
+        }
+        loading.value = false;
+      };
+
       const onInput = (e) => {
         keyword.value = e.target.value;
         emit("dirty");
+        const batch = parseBatchCodes(keyword.value);
+        if (batch) return;
         search(keyword.value);
+      };
+
+      const onKeydown = (e) => {
+        if (e.key !== "Enter") return;
+        const batch = parseBatchCodes(keyword.value);
+        if (!batch) return;
+        e.preventDefault();
+        batchAddCodes(batch);
+      };
+
+      const onBlur = () => {
+        const batch = parseBatchCodes(keyword.value);
+        if (batch) batchAddCodes(batch);
       };
 
       const focusField = () => {
@@ -125,6 +208,8 @@
         apiWarning,
         chipInput,
         onInput,
+        onKeydown,
+        onBlur,
         focusField,
         addCode,
         remove,
@@ -141,6 +226,8 @@
             :value="keyword"
             :placeholder="modelValue.length ? '' : placeholder"
             @input="onInput"
+            @keydown="onKeydown"
+            @blur="onBlur"
           />
         </div>
         <div v-if="open && suggestions.length" class="ui-suggest-list">

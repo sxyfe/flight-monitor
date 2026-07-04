@@ -81,6 +81,33 @@
       };
     }
 
+    function intentToMatrixForm(intent, dateModeHint) {
+      const outStart = intent.out_date_start || intent.out_date || "";
+      const outEnd = intent.out_date_end || outStart;
+      const retStart = intent.ret_date_start || "";
+      const retEnd = intent.ret_date_end || intent.ret_date || retStart;
+      const windowLike =
+        dateModeHint === "window" ||
+        (dateModeHint !== "range" &&
+          outStart &&
+          outEnd &&
+          outStart === retStart &&
+          outEnd === retEnd);
+      return {
+        origins: [...(intent.origins || [])],
+        originLabels: { ...(intent.origin_labels || {}) },
+        destinations: [...(intent.destinations || [])],
+        destLabels: { ...(intent.dest_labels || {}) },
+        outDateStart: outStart,
+        outDateEnd: windowLike ? outStart : outEnd,
+        retDateStart: windowLike ? outStart : retStart,
+        retDateEnd: retEnd,
+        dateMode: windowLike ? "window" : "range",
+        minStayDays: intent.min_stay_days || 1,
+        maxStayDays: intent.max_stay_days ?? "",
+      };
+    }
+
     const app = createApp({
       components: { AirportPicker },
       setup() {
@@ -193,6 +220,22 @@
     window.MatrixEditorBridge = {
       getIntent() {
         return formToIntent(vm.form);
+      },
+      getFormMeta() {
+        return {
+          dateMode: vm.form.dateMode,
+          originLabels: { ...vm.form.originLabels },
+          destLabels: { ...vm.form.destLabels },
+        };
+      },
+      loadIntent(intent, options = {}) {
+        Object.assign(vm.form, intentToMatrixForm(intent, options.dateMode));
+        if (options.originLabels) vm.form.originLabels = { ...options.originLabels };
+        if (options.destLabels) vm.form.destLabels = { ...options.destLabels };
+        if (options.dateMode) vm.form.dateMode = options.dateMode;
+        vm.msg = "";
+        vm.msgType = "";
+        vm.validation = null;
       },
       async validateIntent() {
         vm.msg = "";

@@ -13,15 +13,14 @@ COPY web/flight-watch /app/web/flight-watch
 COPY web/landing /app/web/landing
 COPY web/gateway /app/web/gateway
 COPY web/shared /app/web/shared
-COPY web/billing /app/web/billing
 COPY .cursor/skills/flight-monitor-agent/scripts /app/.cursor/skills/flight-monitor-agent/scripts
 
 RUN pip install --no-cache-dir -r /app/web/nl-search/requirements.txt \
-    && pip install --no-cache-dir -r /app/web/flight-watch/requirements.txt \
-    && pip install --no-cache-dir -r /app/web/billing/requirements.txt
+    && pip install --no-cache-dir -r /app/web/flight-watch/requirements.txt
 
 ENV PYTHONPATH=/app
 ENV WEB_ROOT=/nl-search
+ENV BILLING_ENABLED=false
 ENV ALLOWED_ORIGINS=*
 ENV PYTHONUNBUFFERED=1
 

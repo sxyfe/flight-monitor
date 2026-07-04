@@ -24,7 +24,6 @@ sys.path.insert(0, str(ROOT / "web" / "shared"))
 
 from subscription_gate import (  # noqa: E402
     check_search_allowed,
-    get_entitlements,
     get_user_from_request,
     record_search_usage,
 )
@@ -101,6 +100,25 @@ class SearchRequest(BaseModel):
     mode: str = "smart"
     confirmed_high_cost: bool = False
     search_type: str = "standard"
+    client_request_id: str | None = None
+
+
+NO_STORE_HEADERS = {"Cache-Control": "no-store, no-cache, must-revalidate", "Pragma": "no-cache"}
+
+
+def _new_stream_nonce() -> str:
+    return uuid.uuid4().hex[:16]
+
+
+def _search_start_response(search_id: str, stream_nonce: str, **extra: Any) -> JSONResponse:
+    payload = {
+        "search_id": search_id,
+        "status": "running",
+        "stream_url": f"/api/search/{search_id}/stream",
+        "stream_nonce": stream_nonce,
+        **extra,
+    }
+    return JSONResponse(payload, headers=NO_STORE_HEADERS)
 
 
 class ValidateRequest(BaseModel):
@@ -537,11 +555,6 @@ def _run_matrix_search(search_id: str, intent: MatrixSearchIntent):
             state["error"] = str(e)
 
 
-@app.get("/api/entitlements")
-async def api_entitlements(request: Request):
-    uid = get_user_from_request(request)
-    return get_entitlements(uid)
-
 
 @app.post("/api/search")
 async def start_search(req: SearchRequest, request: Request):
@@ -564,6 +577,7 @@ async def start_search(req: SearchRequest, request: Request):
                 {"code": gate.code, "message": gate.message, "upgrade_url": gate.upgrade_url},
             )
         search_id = f"srch_{uuid.uuid4().hex[:12]}"
+        stream_nonce = _new_stream_nonce()
         with _search_lock:
             _searches[search_id] = {
                 "id": search_id,
@@ -571,18 +585,17 @@ async def start_search(req: SearchRequest, request: Request):
                 "search_type": "matrix",
                 "progress": {"done": 0, "total": est, "hits": 0},
                 "offers": [],
+                "stream_nonce": stream_nonce,
+                "stream_consumed": False,
+                "client_request_id": req.client_request_id,
+                "created_at": time.time(),
             }
         thread = threading.Thread(
             target=_run_matrix_search, args=(search_id, intent), daemon=True
         )
         thread.start()
         record_search_usage(user_id, 1)
-        return {
-            "search_id": search_id,
-            "status": "running",
-            "stream_url": f"/api/search/{search_id}/stream",
-            "search_type": "matrix",
-        }
+        return _search_start_response(search_id, stream_nonce, search_type="matrix")
 
     client = _rollinggo_client()
     intent = SearchIntent.from_dict(req.intent)
@@ -600,6 +613,7 @@ async def start_search(req: SearchRequest, request: Request):
             {"code": gate.code, "message": gate.message, "upgrade_url": gate.upgrade_url},
         )
     search_id = f"srch_{uuid.uuid4().hex[:12]}"
+    stream_nonce = _new_stream_nonce()
     with _search_lock:
         _searches[search_id] = {
             "id": search_id,
@@ -608,15 +622,15 @@ async def start_search(req: SearchRequest, request: Request):
             "progress": {"done": 0, "total": est, "hits": 0},
             "offers": [],
             "mode": mode,
+            "stream_nonce": stream_nonce,
+            "stream_consumed": False,
+            "client_request_id": req.client_request_id,
+            "created_at": time.time(),
         }
     thread = threading.Thread(target=_run_search, args=(search_id, intent, mode), daemon=True)
     thread.start()
     record_search_usage(user_id, 1)
-    return {
-        "search_id": search_id,
-        "status": "running",
-        "stream_url": f"/api/search/{search_id}/stream",
-    }
+    return _search_start_response(search_id, stream_nonce)
 
 
 @app.post("/api/search/{search_id}/cancel")
@@ -659,13 +673,34 @@ async def get_search_viz_bundle(search_id: str):
 
 
 @app.get("/api/search/{search_id}/stream")
-async def stream_search(search_id: str):
+async def stream_search(search_id: str, nonce: str | None = None):
     if search_id not in _searches:
         raise HTTPException(404, "search not found")
+
+    with _search_lock:
+        st = _searches.get(search_id, {})
+        expected_nonce = st.get("stream_nonce")
+        if not nonce or not expected_nonce or nonce != expected_nonce:
+            raise HTTPException(
+                403,
+                {
+                    "code": "INVALID_STREAM_NONCE",
+                    "message": "无效的 stream nonce，请重新发起搜索（POST /api/search）",
+                },
+            )
+        if st.get("stream_consumed"):
+            raise HTTPException(
+                410,
+                {
+                    "code": "STREAM_ALREADY_CONSUMED",
+                    "message": "该搜索流已结束，请重新发起搜索",
+                },
+            )
 
     async def event_gen():
         last_done = -1
         last_offer_idx = 0
+        terminal = False
         while True:
             st = _searches.get(search_id, {})
             prog = st.get("progress", {})
@@ -688,6 +723,7 @@ async def stream_search(search_id: str):
                     "pricing_warning": st.get("pricing_warning"),
                 }
                 yield f"event: completed\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
+                terminal = True
                 break
             if st.get("status") == "cancelled":
                 payload = {
@@ -700,15 +736,27 @@ async def stream_search(search_id: str):
                     "pricing_warning": st.get("pricing_warning"),
                 }
                 yield f"event: cancelled\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
+                terminal = True
                 break
             if st.get("status") == "error":
                 yield f"event: error\ndata: {json.dumps({'message': st.get('error')})}\n\n"
+                terminal = True
                 break
             if search_id not in _searches:
                 break
             await asyncio.sleep(0.5)
 
-    return StreamingResponse(event_gen(), media_type="text/event-stream")
+        if terminal:
+            with _search_lock:
+                live = _searches.get(search_id)
+                if live is not None:
+                    live["stream_consumed"] = True
+
+    return StreamingResponse(
+        event_gen(),
+        media_type="text/event-stream",
+        headers={**NO_STORE_HEADERS, "X-Accel-Buffering": "no"},
+    )
 
 
 if __name__ == "__main__":

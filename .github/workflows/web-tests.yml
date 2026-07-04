@@ -37,6 +37,9 @@ jobs:
           python scripts/test_viz_export.py
           python scripts/test_billing.py
           python web/flight-watch/test_evaluator.py
+          python web/flight-watch/test_poll_watch.py
+          python web/flight-watch/test_mounted_import.py
+          python web/gateway/test_mounted_post.py
 
       - name: Verify web gateway imports
         run: python scripts/verify_web_gateway.py
