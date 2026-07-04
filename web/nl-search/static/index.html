@@ -274,6 +274,32 @@
             .grid2 {
                 grid-template-columns: 1fr;
             }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 14px 16px;
+            }
+            header h1 {
+                font-size: 1.05rem;
+            }
+            .tabs,
+            .result-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap;
+            }
+            .tab-btn {
+                flex-shrink: 0;
+                padding: 8px 14px;
+                font-size: 0.82rem;
+            }
+            .wrap {
+                padding: 14px 12px 48px;
+            }
+            .card {
+                padding: 14px;
+            }
         }
         
         label {
