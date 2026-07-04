@@ -27,10 +27,21 @@
         retDateStart: "",
         retDateEnd: "",
         dateMode: "range",
+        minStayDays: 1,
+        maxStayDays: "",
       };
     }
 
+    function stayFields(form) {
+      const min = Number(form.minStayDays) || 1;
+      const maxRaw = form.maxStayDays;
+      const max =
+        maxRaw === "" || maxRaw == null ? null : Number(maxRaw);
+      return { min_stay_days: min, max_stay_days: max };
+    }
+
     function formToIntent(form) {
+      const stay = stayFields(form);
       const outStart = form.outDateStart || "";
       if (form.dateMode === "window") {
         const windowEnd = form.retDateEnd || "";
@@ -45,8 +56,7 @@
           out_date_end: windowEnd,
           ret_date_start: outStart,
           ret_date_end: windowEnd,
-          min_stay_days: 1,
-          max_stay_days: null,
+          ...stay,
           cabin: "ECONOMY",
           adults: 1,
           children: 0,
@@ -64,8 +74,7 @@
         out_date_end: outEnd,
         ret_date_start: retStart,
         ret_date_end: retEnd,
-        min_stay_days: 1,
-        max_stay_days: null,
+        ...stay,
         cabin: "ECONOMY",
         adults: 1,
         children: 0,
@@ -164,6 +173,16 @@
             </div>
             <p class="parse-hint matrix-form-hint matrix-window-hint">两轴共用同一日期窗口，适合「国庆前后」等连续区间扫价。</p>
           </template>
+          <div class="form-row-compact matrix-stay">
+            <div class="ui-field">
+              <span class="ui-label">最少停留（天）</span>
+              <input class="ui-input" type="number" min="1" v-model.number="form.minStayDays" aria-label="最少停留天数" />
+            </div>
+            <div class="ui-field">
+              <span class="ui-label">最多停留（天）</span>
+              <input class="ui-input" type="number" min="1" v-model="form.maxStayDays" placeholder="不限" aria-label="最多停留天数" />
+            </div>
+          </div>
           <p v-if="msg" class="ui-msg" :class="'ui-msg-' + (msgType || 'ok')">{{ msg }}</p>
         </div>
       `,
