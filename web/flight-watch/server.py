@@ -335,6 +335,21 @@ async def api_presets():
     return {"items": data.get("presets", [])}
 
 
+@app.post("/api/presets/import-all")
+async def api_import_all_presets():
+    if not PRESETS_FILE.exists():
+        raise HTTPException(404, "预设库不存在")
+    data = json.loads(PRESETS_FILE.read_text(encoding="utf-8"))
+    created = []
+    for preset in data.get("presets", []):
+        payload = {**preset, "enabled": False, "name": preset.get("name", preset.get("id", "预设"))}
+        payload.pop("id", None)
+        watch = create_watch(payload)
+        created.append(_watch_summary(watch))
+    refresh_scheduler_jobs(_client_factory)
+    return {"items": created, "count": len(created)}
+
+
 @app.post("/api/presets/{preset_id}/import")
 async def api_import_preset(preset_id: str):
     if not PRESETS_FILE.exists():

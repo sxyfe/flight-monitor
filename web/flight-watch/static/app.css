@@ -113,3 +113,66 @@ header h1 span { color: var(--coral); }
 .muted { color: var(--muted); font-size: 0.82rem; }
 .error { color: #b00020; font-size: 0.85rem; margin-top: 8px; }
 .toggle { display: flex; align-items: center; gap: 8px; }
+
+.list-toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.list-toolbar h2 { margin: 0; font-size: 0.95rem; color: var(--teal); }
+.list-toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.count-badge {
+  font-size: 0.75rem; font-weight: 600; color: var(--muted);
+  background: rgba(13, 110, 110, 0.1); padding: 2px 8px; border-radius: 999px; margin-left: 4px;
+}
+.list-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.list-select {
+  padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px;
+  font-size: 0.82rem; background: #fff;
+}
+.empty-state { text-align: center; padding: 24px 12px; }
+.empty-state p { margin-bottom: 8px; }
+
+.watch-card {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  padding: 14px; margin-bottom: 10px; border: 1px solid var(--line);
+  border-radius: 12px; background: #fff;
+}
+.watch-card.is-disabled { opacity: 0.72; }
+.watch-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px; }
+.watch-card-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0; }
+.status-pill {
+  font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; font-weight: 600;
+}
+.status-pill.on { background: rgba(45, 106, 79, 0.15); color: var(--ok); }
+.status-pill.off { background: rgba(92, 90, 84, 0.12); color: var(--muted); }
+.status-pill.trip { background: rgba(13, 110, 110, 0.1); color: var(--teal); }
+.status-pill.hit { background: rgba(45, 106, 79, 0.2); color: var(--ok); }
+.status-pill.imported { background: rgba(188, 108, 37, 0.15); color: var(--warn); }
+
+.preset-card {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--line);
+}
+.preset-card:last-child { border-bottom: none; }
+.preset-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 100; background: rgba(26, 26, 26, 0.35);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal-card {
+  background: var(--card); border-radius: 14px; padding: 20px; max-width: 420px; width: 100%;
+  box-shadow: var(--shadow);
+}
+.modal-card h3 { font-size: 1rem; margin-bottom: 8px; color: var(--teal); }
+.preset-leg-list { margin: 12px 0; padding-left: 18px; font-size: 0.85rem; }
+.preset-leg-list li { margin-bottom: 4px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.btn.danger { color: #b00020; border-color: rgba(176, 0, 32, 0.25); }
+
+@media (max-width: 640px) {
+  .watch-card { flex-direction: column; }
+  .watch-card-actions { flex-direction: row; flex-wrap: wrap; align-items: flex-start; width: 100%; }
+  .preset-card { flex-direction: column; }
+  .preset-actions { flex-direction: row; width: 100%; }
+}

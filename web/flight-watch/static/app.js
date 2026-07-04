@@ -1,5 +1,12 @@
 const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
 
+const TRIP_LABELS = {
+  round_trip: "往返",
+  one_way: "单程",
+  multi_leg: "多段",
+  open_jaw: "开口程",
+};
+
 const emptyWatch = () => ({
   name: "",
   enabled: true,
@@ -38,6 +45,57 @@ createApp({
     const showRgKey = ref(false);
     const showPushplus = ref(false);
     const status = reactive({ rollinggo_configured: false });
+    const listFilter = ref("all");
+    const listSort = ref("updated");
+    const presetPreview = ref(null);
+
+    const filteredWatches = computed(() => {
+      let rows = [...watches.value];
+      if (listFilter.value === "enabled") rows = rows.filter((w) => w.enabled);
+      if (listFilter.value === "disabled") rows = rows.filter((w) => !w.enabled);
+      rows.sort((a, b) => {
+        if (listSort.value === "name") return (a.name || "").localeCompare(b.name || "", "zh");
+        if (listSort.value === "price") {
+          const pa = a.latest_snapshot?.price ?? Infinity;
+          const pb = b.latest_snapshot?.price ?? Infinity;
+          return pa - pb;
+        }
+        const ta = a.latest_snapshot?.checked_at || a.updated_at || "";
+        const tb = b.latest_snapshot?.checked_at || b.updated_at || "";
+        return tb.localeCompare(ta);
+      });
+      return rows;
+    });
+
+    const enabledCount = computed(() => watches.value.filter((w) => w.enabled).length);
+    const importedPresetIds = computed(() => {
+      const names = new Set(watches.value.map((w) => w.name));
+      return new Set(presets.value.filter((p) => names.has(p.name)).map((p) => p.id));
+    });
+
+    function tripLabel(mode) {
+      return TRIP_LABELS[mode] || mode;
+    }
+
+    function formatLegs(w) {
+      return (w.legs || [])
+        .map((l) => `${l.from_city}→${l.to_city}${l.date ? " " + l.date : ""}`)
+        .join(" · ");
+    }
+
+    function priceStatus(w) {
+      const p = w.latest_snapshot?.price;
+      const max = w.alerts?.max_price;
+      if (p == null || max == null) return "";
+      return p <= max ? "hit" : "above";
+    }
+
+    function priceStatusText(w) {
+      const s = priceStatus(w);
+      if (s === "hit") return "已低于限价";
+      if (s === "above") return "高于限价";
+      return "待查价";
+    }
 
     const carriersStr = computed({
       get: () => (form.filters.carriers || []).join(","),
@@ -173,11 +231,32 @@ createApp({
       tab.value = "history";
     }
 
-    async function importPreset(id) {
+    async function importPreset(id, goEdit = false) {
       loading.value = true;
+      error.value = "";
       try {
-        await api(`/api/presets/${id}/import`, { method: "POST" });
-        message.value = "预设已导入（默认未启用）";
+        const data = await api(`/api/presets/${id}/import`, { method: "POST" });
+        message.value = goEdit
+          ? "预设已导入，请补全日期后启用"
+          : "预设已导入（默认未启用，可在列表编辑）";
+        presetPreview.value = null;
+        tab.value = goEdit ? "edit" : "list";
+        await loadWatches();
+        if (goEdit && data.id) editWatch(data);
+      } catch (e) {
+        error.value = String(e.message || e);
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    async function importAllPresets() {
+      if (!confirm(`确定导入全部 ${presets.value.length} 条达美开口预设？（默认均未启用）`)) return;
+      loading.value = true;
+      error.value = "";
+      try {
+        const data = await api("/api/presets/import-all", { method: "POST" });
+        message.value = `已导入 ${data.count || 0} 条预设，请逐条补日期并启用`;
         tab.value = "list";
         await loadWatches();
       } catch (e) {
@@ -185,6 +264,14 @@ createApp({
       } finally {
         loading.value = false;
       }
+    }
+
+    function openPresetPreview(p) {
+      presetPreview.value = p;
+    }
+
+    function closePresetPreview() {
+      presetPreview.value = null;
     }
 
     function addLeg() {
@@ -287,6 +374,16 @@ createApp({
       showRgKey,
       showPushplus,
       status,
+      listFilter,
+      listSort,
+      presetPreview,
+      filteredWatches,
+      enabledCount,
+      importedPresetIds,
+      tripLabel,
+      formatLegs,
+      priceStatus,
+      priceStatusText,
       carriersStr,
       loadWatches,
       saveConfig,
@@ -298,6 +395,9 @@ createApp({
       pollWatch,
       loadSnapshots,
       importPreset,
+      importAllPresets,
+      openPresetPreview,
+      closePresetPreview,
       addLeg,
       removeLeg,
       setupAirportInput,
@@ -323,31 +423,55 @@ createApp({
     <p v-if="error" class="error">{{ error }}</p>
 
     <div v-if="tab==='list'" class="card">
-      <h2>我的监控</h2>
-      <button class="btn btn-primary btn-sm" @click="tab='edit'; resetForm()">+ 新建监控</button>
-      <div v-if="!watches.length" class="muted" style="margin-top:12px">暂无监控，可从预设库导入或新建。</div>
-      <div v-for="w in watches" :key="w.id" class="watch-row">
-        <div>
-          <strong>{{ w.name }}</strong>
-          <div class="watch-meta">
-            <span class="tag">{{ w.trip_mode }}</span>
-            <span v-for="l in w.legs" :key="l.from_city+l.date">{{ l.from_city }}→{{ l.to_city }} {{ l.date }}</span>
-          </div>
-          <div class="watch-meta" v-if="w.latest_snapshot">
-            最近：{{ w.latest_snapshot.currency }} {{ w.latest_snapshot.price ?? '—' }}
-            · {{ w.latest_snapshot.provider }}
-            <span v-if="w.latest_snapshot.bookable">· 同票参考</span>
-          </div>
-          <div class="watch-meta">限价 {{ w.currency }} {{ w.alerts.max_price }} · 每 {{ w.schedule.interval_hours }}h</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-          <label class="toggle"><input type="checkbox" :checked="w.enabled" @change="toggleWatch(w)" /> 启用</label>
-          <button class="btn btn-secondary btn-sm" @click="pollWatch(w.id)">立即查价</button>
-          <button class="btn btn-ghost btn-sm" @click="editWatch(w)">编辑</button>
-          <button class="btn btn-ghost btn-sm" @click="loadSnapshots(w.id)">历史</button>
-          <button class="btn btn-ghost btn-sm" @click="deleteWatch(w.id)">删除</button>
+      <div class="list-toolbar">
+        <h2>我的监控 <span class="count-badge">{{ watches.length }}</span></h2>
+        <div class="list-toolbar-actions">
+          <button class="btn btn-primary btn-sm" @click="tab='edit'; resetForm()">+ 新建</button>
+          <button class="btn btn-ghost btn-sm" @click="tab='presets'">从预设导入</button>
         </div>
       </div>
+      <div class="list-filters">
+        <select v-model="listFilter" class="list-select" aria-label="筛选">
+          <option value="all">全部 ({{ watches.length }})</option>
+          <option value="enabled">已启用 ({{ enabledCount }})</option>
+          <option value="disabled">未启用 ({{ watches.length - enabledCount }})</option>
+        </select>
+        <select v-model="listSort" class="list-select" aria-label="排序">
+          <option value="updated">最近查价</option>
+          <option value="price">当前价格</option>
+          <option value="name">名称</option>
+        </select>
+      </div>
+      <div v-if="!filteredWatches.length" class="empty-state">
+        <p>暂无监控</p>
+        <p class="muted">从<strong>预设库</strong>一键导入达美开口方案，或新建自定义规则。</p>
+        <button class="btn btn-secondary btn-sm" @click="tab='presets'">浏览预设库</button>
+      </div>
+      <article v-for="w in filteredWatches" :key="w.id" class="watch-card" :class="{ 'is-disabled': !w.enabled }">
+        <div class="watch-card-main">
+          <div class="watch-card-head">
+            <strong>{{ w.name }}</strong>
+            <span class="status-pill" :class="w.enabled ? 'on' : 'off'">{{ w.enabled ? '监控中' : '已暂停' }}</span>
+            <span class="status-pill trip">{{ tripLabel(w.trip_mode) }}</span>
+            <span v-if="priceStatus(w)==='hit'" class="status-pill hit">{{ priceStatusText(w) }}</span>
+          </div>
+          <p class="watch-meta">{{ formatLegs(w) }}</p>
+          <p class="watch-meta" v-if="w.latest_snapshot">
+            最近 ¥{{ Math.round(w.latest_snapshot.price).toLocaleString() }}
+            <span class="muted">/ 限价 ¥{{ w.alerts.max_price }}</span>
+            · {{ w.latest_snapshot.checked_at?.slice(0, 16) || '—' }}
+            <span v-if="w.latest_snapshot.bookable" class="tag">同票</span>
+          </p>
+          <p class="watch-meta muted" v-else>尚未查价 · 每 {{ w.schedule.interval_hours }}h 轮询</p>
+        </div>
+        <div class="watch-card-actions">
+          <label class="toggle"><input type="checkbox" :checked="w.enabled" @change="toggleWatch(w)" /> 启用</label>
+          <button class="btn btn-secondary btn-sm" @click="pollWatch(w.id)">查价</button>
+          <button class="btn btn-ghost btn-sm" @click="editWatch(w)">编辑</button>
+          <button class="btn btn-ghost btn-sm" @click="loadSnapshots(w.id)">历史</button>
+          <button class="btn btn-ghost btn-sm danger" @click="deleteWatch(w.id)">删除</button>
+        </div>
+      </article>
     </div>
 
     <div v-if="tab==='edit'" class="card">
@@ -402,15 +526,37 @@ createApp({
     </div>
 
     <div v-if="tab==='presets'" class="card">
-      <h2>预设库 · 达美开口（15 条）</h2>
-      <p class="muted">导入后可编辑日期/限价；默认未启用。</p>
-      <div v-for="p in presets" :key="p.id" class="watch-row">
+      <div class="list-toolbar">
+        <h2>预设库 · 达美开口（{{ presets.length }} 条）</h2>
+        <button class="btn btn-secondary btn-sm" :disabled="loading || !presets.length" @click="importAllPresets">全部导入</button>
+      </div>
+      <p class="muted">导入后默认<strong>未启用</strong>，需补全航段日期并设置限价后再开启监控。</p>
+      <article v-for="p in presets" :key="p.id" class="preset-card">
         <div>
           <strong>{{ p.name }}</strong>
-          <div class="watch-meta">参考价 ¥{{ p.reference_price }} · {{ p.legs.map(l=>l.from_city+'→'+l.to_city).join(' / ') }}</div>
+          <span v-if="importedPresetIds.has(p.id)" class="status-pill imported">已导入</span>
+          <div class="watch-meta">参考 ¥{{ p.reference_price }} · {{ p.legs.map(l=>l.from_city+'→'+l.to_city).join(' / ') }}</div>
           <div v-if="p.notes" class="watch-meta">{{ p.notes }}</div>
         </div>
-        <button class="btn btn-secondary btn-sm" @click="importPreset(p.id)">导入</button>
+        <div class="preset-actions">
+          <button class="btn btn-ghost btn-sm" @click="openPresetPreview(p)">预览</button>
+          <button class="btn btn-secondary btn-sm" @click="importPreset(p.id, true)">导入并编辑</button>
+        </div>
+      </article>
+    </div>
+
+    <div v-if="presetPreview" class="modal-backdrop" @click.self="closePresetPreview">
+      <div class="modal-card">
+        <h3>{{ presetPreview.name }}</h3>
+        <p class="watch-meta">参考价 ¥{{ presetPreview.reference_price }} · {{ tripLabel(presetPreview.trip_mode) }}</p>
+        <ul class="preset-leg-list">
+          <li v-for="(leg, i) in presetPreview.legs" :key="i">航段 {{ i+1 }}：{{ leg.from_city }} → {{ leg.to_city }}<span v-if="leg.date"> · {{ leg.date }}</span></li>
+        </ul>
+        <p v-if="presetPreview.notes" class="muted">{{ presetPreview.notes }}</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost btn-sm" @click="closePresetPreview">关闭</button>
+          <button class="btn btn-primary btn-sm" @click="importPreset(presetPreview.id, true)">导入并编辑</button>
+        </div>
       </div>
     </div>
 
