@@ -44,3 +44,22 @@
   color: #00ffc8;
   background: rgba(0, 255, 200, 0.08);
 }
+
+@media (max-width: 640px) {
+  .fm-site-header {
+    padding: 8px 12px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .fm-site-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    max-width: 100%;
+  }
+  .fm-site-nav a {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+  }
+}

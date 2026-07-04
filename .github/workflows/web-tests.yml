@@ -1,0 +1,40 @@
+name: Web Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "web/**"
+      - ".github/workflows/web-tests.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "web/**"
+      - ".github/workflows/web-tests.yml"
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r web/nl-search/requirements.txt
+          pip install -r web/flight-watch/requirements.txt
+
+      - name: Run unit tests
+        run: |
+          python scripts/test_holiday_windows.py
+          python scripts/test_matrix_intent.py
+          python scripts/test_viz_export.py
+          python web/flight-watch/test_evaluator.py
+
+      - name: Verify web gateway imports
+        run: python scripts/verify_web_gateway.py
