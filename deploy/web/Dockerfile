@@ -9,6 +9,7 @@ WORKDIR /app
 
 COPY scripts /app/scripts
 COPY web/nl-search /app/web/nl-search
+COPY web/flight-watch /app/web/flight-watch
 COPY web/exhaustive-viz /app/web/exhaustive-viz
 COPY web/landing /app/web/landing
 COPY web/gateway /app/web/gateway
@@ -34,7 +35,8 @@ if p.is_symlink():
         )
 PY
 
-RUN pip install --no-cache-dir -r /app/web/nl-search/requirements.txt
+RUN pip install --no-cache-dir -r /app/web/nl-search/requirements.txt \
+    && pip install --no-cache-dir -r /app/web/flight-watch/requirements.txt
 
 ENV PYTHONPATH=/app
 ENV WEB_ROOT=/nl-search

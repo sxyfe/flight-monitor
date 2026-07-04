@@ -27,11 +27,23 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   border-bottom: 1px solid var(--line);
   background: rgba(255, 253, 248, 0.92);
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+@media (max-width: 640px) {
+  header { padding: 12px 14px; }
+  header h1 { font-size: 1rem; }
+  header .muted { font-size: 0.72rem; width: 100%; }
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .tab-btn { flex-shrink: 0; padding: 8px 12px; font-size: 0.82rem; }
+  .watch-row { flex-direction: column; }
+  .watch-row > div:last-child { align-items: flex-start !important; flex-direction: row !important; flex-wrap: wrap; }
 }
 
 header h1 { font-size: 1.15rem; }

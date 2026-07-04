@@ -1,6 +1,7 @@
-"""Flight Monitor 统一 Web 网关：官网 + exhaustive-viz + nl-search。"""
+"""Flight Monitor 统一 Web 网关：官网 + exhaustive-viz + nl-search + flight-watch。"""
 from __future__ import annotations
 
+import importlib.util
 import os
 import sys
 from pathlib import Path
@@ -13,11 +14,22 @@ WEB = Path(__file__).resolve().parent.parent
 ROOT = WEB.parent
 
 sys.path.insert(0, str(ROOT / "scripts"))
-sys.path.insert(0, str(WEB / "nl-search"))
 
 os.environ.setdefault("WEB_ROOT", "/nl-search")
 
-import server as nl_server  # noqa: E402
+
+def _load_subapp(module_name: str, app_dir: Path):
+    sys.path.insert(0, str(app_dir))
+    spec = importlib.util.spec_from_file_location(module_name, app_dir / "server.py")
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"无法加载 {app_dir / 'server.py'}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.app
+
+
+nl_app = _load_subapp("nl_search_server", WEB / "nl-search")
+fw_app = _load_subapp("flight_watch_server", WEB / "flight-watch")
 
 app = FastAPI(title="Flight Monitor Web", version="1.0.0")
 LANDING_DIR = WEB / "landing"
@@ -40,7 +52,13 @@ async def skill_redirect():
     return RedirectResponse("/skill/", status_code=302)
 
 
-app.mount("/nl-search", nl_server.app)
+@app.get("/flight-watch")
+async def flight_watch_redirect():
+    return RedirectResponse("/flight-watch/", status_code=302)
+
+
+app.mount("/nl-search", nl_app)
+app.mount("/flight-watch", fw_app)
 app.mount("/viz", StaticFiles(directory=VIZ_DIR, html=True), name="viz")
 app.mount("/skill", StaticFiles(directory=SKILL_DIR, html=True), name="skill")
 app.mount("/", StaticFiles(directory=LANDING_DIR, html=True), name="landing")

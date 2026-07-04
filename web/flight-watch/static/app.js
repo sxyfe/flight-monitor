@@ -46,8 +46,13 @@ createApp({
       },
     });
 
+    const API_BASE = (() => {
+      const m = location.pathname.match(/^(.*\/flight-watch)\/?/);
+      return m ? m[1] : "";
+    })();
+
     async function api(path, opts = {}) {
-      const res = await fetch(path, {
+      const res = await fetch(`${API_BASE}${path}`, {
         headers: { "Content-Type": "application/json" },
         ...opts,
       });
@@ -434,15 +439,16 @@ createApp({
       </div>
       <div class="field"><label>飞书 Webhook</label><input v-model="config.notify.feishu_webhook" placeholder="https://..." /></div>
       <div class="field">
-        <label>PushPlus Token</label>
-        <input :type="showPushplus ? 'text' : 'password'" v-model="config.notify.pushplus_token" />
+        <label>微信通知（PushPlus Token）<a href="https://www.pushplus.plus/" target="_blank" rel="noopener" style="font-weight:400;margin-left:6px">申请 Token →</a></label>
+        <input :type="showPushplus ? 'text' : 'password'" v-model="config.notify.pushplus_token" placeholder="关注 PushPlus 公众号后获取" />
         <button class="btn btn-ghost btn-sm" style="margin-top:6px" @click="showPushplus=!showPushplus">{{ showPushplus ? '隐藏' : '显示' }}</button>
+        <p class="muted" style="margin-top:6px;font-size:0.78rem">降价告警将推送到微信；可与飞书同时配置双通道通知。</p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
         <button class="btn btn-secondary btn-sm" @click="saveConfig">保存</button>
         <button class="btn btn-ghost btn-sm" @click="testRollingGo">测试 RollingGo</button>
         <button class="btn btn-ghost btn-sm" @click="testNotify('/api/config/test-feishu')">测试飞书</button>
-        <button class="btn btn-ghost btn-sm" @click="testNotify('/api/config/test-pushplus')">测试 PushPlus</button>
+        <button class="btn btn-ghost btn-sm" @click="testNotify('/api/config/test-pushplus')">测试微信</button>
       </div>
       <p class="muted" style="margin-top:12px">
         定时监控需保持本服务运行；或使用 cron：<code>curl -X POST http://127.0.0.1:8767/api/watch/run-once</code>
