@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080" />
+    <title>Flight Monitor · nl-search 小红书配图</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+         :root {
+            --w: 1080px;
+            --bg: #ebe6dc;
+            --card: #fffdf8;
+            --ink: #141210;
+            --muted: #5c574f;
+            --coral: #d94e2b;
+            --teal: #0a6464;
+            --line: rgba(20, 18, 16, 0.1);
+            --display: "Fraunces", "Noto Serif SC", serif;
+            --body: "Noto Serif SC", serif;
+            --mono: "IBM Plex Mono", ui-monospace, monospace;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            counter-reset: slide;
+            background: #2a2826;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0 32px;
+            font-family: var(--body);
+            color: var(--ink);
+        }
+        
+        .frame {
+            counter-increment: slide;
+            width: var(--w);
+            min-height: 1440px;
+            position: relative;
+            background: var(--bg);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+        }
+        
+        .grain {
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            opacity: 0.045;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            z-index: 99;
+        }
+        
+        .mesh {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 70% 50% at 8% 12%, rgba(217, 78, 43, 0.12), transparent 55%), radial-gradient(ellipse 60% 45% at 92% 88%, rgba(10, 100, 100, 0.14), transparent 50%), linear-gradient(165deg, #f5f0e6 0%, var(--bg) 45%, #e4ddd0 100%);
+        }
+        
+        .inner {
+            position: relative;
+            z-index: 2;
+            padding: 48px 56px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 1440px;
+        }
+        
+        .tag {
+            font-family: var(--mono);
+            font-size: 13px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--coral);
+        }
+        
+        h1 {
+            font-family: var(--display);
+            font-size: 56px;
+            line-height: 1.12;
+            font-weight: 800;
+        }
+        
+        h1 em {
+            font-style: normal;
+            color: var(--teal);
+        }
+        
+        h2 {
+            font-family: var(--display);
+            font-size: 34px;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+        
+        .lead {
+            font-size: 22px;
+            line-height: 1.65;
+            color: var(--muted);
+            max-width: 920px;
+        }
+        
+        .lead strong {
+            color: var(--ink);
+            font-weight: 700;
+        }
+        
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .pill {
+            font-family: var(--mono);
+            font-size: 13px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(10, 100, 100, 0.1);
+            color: var(--teal);
+            border: 1px solid rgba(10, 100, 100, 0.18);
+        }
+        
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 24px 28px;
+            box-shadow: 0 12px 40px rgba(20, 18, 16, 0.06);
+        }
+        
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--coral);
+        }
+        
+        .card p,
+        .card li {
+            font-size: 19px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+        
+        .card ul {
+            padding-left: 22px;
+        }
+        
+        .card li+li {
+            margin-top: 8px;
+        }
+        
+        .shot {
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            box-shadow: 0 16px 48px rgba(20, 18, 16, 0.1);
+            display: block;
+        }
+        
+        .shot-caption {
+            font-size: 15px;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        
+        .step {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 20px 18px;
+        }
+        
+        .step-num {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--coral);
+            letter-spacing: 0.12em;
+            margin-bottom: 8px;
+        }
+        
+        .step h4 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .step p {
+            font-size: 16px;
+            line-height: 1.55;
+            color: var(--muted);
+        }
+        
+        .cta {
+            margin-top: auto;
+            padding-top: 12px;
+        }
+        
+        .cta-box {
+            background: linear-gradient(135deg, var(--coral), #c04424);
+            color: #fff;
+            border-radius: 18px;
+            padding: 28px 32px;
+            text-align: center;
+        }
+        
+        .cta-box p {
+            font-size: 20px;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+        
+        .cta-box strong {
+            display: block;
+            font-family: var(--display);
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .footnote {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+        
+        .page-num {
+            position: absolute;
+            bottom: 28px;
+            right: 40px;
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--muted);
+            z-index: 3;
+        }
+        
+        .page-num::before {
+            content: counter(slide, decimal-leading-zero);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 01 封面 -->
+    <section class="frame">
+        <div class="mesh"></div>
+        <div class="grain"></div>
+        <div class="inner">
+            <p class="tag">RollingGo · 实时查价 · 免费 Web</p>
+            <h1>不猜日期，<br /><em>扫组合</em>找特价。</h1>
+            <p class="lead">
+                自己做了 <strong>Flight Monitor</strong> 在线查价工具——用中文说意图，穷举引擎帮你扫
+                <strong>多城 × 多日期 × 开口程</strong>，还有价格矩阵一眼看低价组合。
+            </p>
+            <div class="pill-row">
+                <span class="pill">自然语言查价</span>
+                <span class="pill">价格矩阵</span>
+                <span class="pill">往返 + 开口程</span>
+                <span class="pill">7月机票洼地</span>
+            </div>
+            <div class="card" style="margin-top: 24px">
+                <h3>适合谁看？</h3>
+                <ul>
+                    <li>日期灵活、想捡漏特价机票的穷游党</li>
+                    <li>懒得一个个日期点 OTA 的打工人</li>
+                    <li>想扫「国庆前后」「多出发地」组合的人</li>
+                </ul>
+            </div>
+            <p class="footnote">展示价为成人含税参考价 · 需自备 RollingGo API Key · 左滑看用法</p>
+        </div>
+        <span class="page-num"></span>
+    </section>
+
+    <!-- 02 自然语言 -->
+    <section class="frame">
+        <div class="mesh"></div>
+        <div class="grain"></div>
+        <div class="inner">
+            <p class="tag">Step 01 · 说意图</p>
+            <h2>中文描述，不用填复杂表单</h2>
+            <p class="lead">直接输入：<strong>「北京天津出发，国庆前后去东南亚，至少玩 7 天」</strong>——点解析意图，自动变成结构化搜索条件。</p>
+            <img class="shot" src="02-nl-search-natural-language.png" alt="自然语言查价界面" />
+            <p class="shot-caption">自然语言 Tab · 支持 LLM 解析（可选配置）</p>
+            <div class="card">
+                <h3>它能理解什么？</h3>
+                <ul>
+                    <li>多出发地 / 多目的地 / 按国家扩城</li>
+                    <li>「国庆」→ 10-01~10-07；「国庆前后」→ 9-28~10-10</li>
+                    <li>最少 / 最多停留天数、开口程与往返联票</li>
+                </ul>
+            </div>
+        </div>
+        <span class="page-num"></span>
+    </section>
+
+    <!-- 03 表单 -->
+    <section class="frame">
+        <div class="mesh"></div>
+        <div class="grain"></div>
+        <div class="inner">
+            <p class="tag">Step 02 · 精调条件</p>
+            <h2>表单模式，条件一目了然</h2>
+            <p class="lead">解析后可切到表单继续编辑：出发地、目的地、日期窗、价格上限、行程类型都能改。</p>
+            <img class="shot" src="03-nl-search-form.png" alt="表单查价界面" />
+            <p class="shot-caption">表单 Tab · 往返联票 + 开口程可同时勾选</p>
+            <div class="card">
+                <h3>两种搜索模式</h3>
+                <ul>
+                    <li><strong>智能精简</strong>：快速扫热门城市组合，日常捡漏够用</li>
+                    <li><strong>全量穷举</strong>：覆盖配置内全部组合，适合深度挖票</li>
+                </ul>
+            </div>
+        </div>
+        <span class="page-num"></span>
+    </section>
+
+    <!-- 04 价格矩阵输入 -->
+    <section class="frame">
+        <div class="mesh"></div>
+        <div class="grain"></div>
+        <div class="inner">
+            <p class="tag">Step 03 · 价格矩阵</p>
+            <h2>去程 × 返程，二维扫低价</h2>
+            <p class="lead">不用猜「哪天走哪天回最便宜」——矩阵把日期组合摊成热力格，<strong>独立范围</strong>或<strong>共用窗口</strong>两种模式。</p>
+            <img class="shot" src="04-nl-search-matrix.png" alt="价格矩阵设置" />
+            <p class="shot-caption">价格矩阵 Tab · 多出发地 × 多目的地</p>
+        </div>
+        <span class="page-num"></span>
+    </section>
+
+    <!-- 05 矩阵结果 -->
+    <section class="frame">
+        <div class="mesh"></div>
+        <div class="grain"></div>
+        <div class="inner">
+            <p class="tag">结果 · 一眼看低价</p>
+            <h2>颜色越深，这条路线越便宜</h2>
+            <p class="lead">每条路线独立色阶，只看该矩阵内的相对高低；移动端可横滑，点格子看 tooltip 明细。</p>
+            <img class="shot" src="matrix-manila.png" alt="马尼拉矩阵" style="margin-top: 16px" />
+            <p class="shot-caption">北京 → 马尼拉 · 最佳组合示例</p>
+        </div>
+        <span class="page-num"></span>
+    </section>
+
+    <!-- 06 报告 + CTA -->
+    <section class="frame">
+        <div class="mesh"></div>
+        <div class="grain"></div>
+        <div class="inner">
+            <p class="tag">报告 · 收藏用</p>
+            <h2>暖色报告：图表 + 筛选 + 明细</h2>
+            <p class="lead">搜索完成后出分析报告——目的地最低价、价格分布、去程/返程低价榜、航班号/日期/价格分页列表，侧栏筛选可联动。</p>
+            <div class="steps">
+                <div class="step">
+                    <p class="step-num">01</p>
+                    <h4>说意图</h4>
+                    <p>自然语言或表单，多城多日期一次描述</p>
+                </div>
+                <div class="step">
+                    <p class="step-num">02</p>
+                    <h4>选模式</h4>
+                    <p>精简快速扫 / 全量深度穷举</p>
+                </div>
+                <div class="step">
+                    <p class="step-num">03</p>
+                    <h4>看报告</h4>
+                    <p>图表联动、筛选侧栏、低价榜</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3>7 月捡漏小提示（2026 暑运）</h3>
+                <p>7 月上旬部分航线价格处于近年洼地，日期灵活的话比一个个点 OTA 日历更高效——但具体票价以实时查价为准。</p>
+            </div>
+            <div class="cta">
+                <div class="cta-box">
+                    <strong>Flight Monitor 在线查价</strong>
+                    <p>本地：127.0.0.1:8765/nl-search/<br />线上：flight-monitor-web.onrender.com<br />评论「查价」发你入口 · 需自备 RollingGo Key</p>
+                </div>
+                <p class="footnote">独立开发者 @寻屿 · 感谢 RollingGo MCP 查价能力 · 展示价无 OTA 跳转</p>
+            </div>
+        </div>
+        <span class="page-num"></span>
+    </section>
+</body>
+
+</html>

@@ -110,12 +110,21 @@
         if (msg) setSearchStatus(msg, msgType || "warn");
     });
 
-    $("btnSettings").onclick = () => {
+    function openSettingsView() {
         $("viewMain").classList.add("hidden");
         $("viewSettings").classList.remove("hidden");
         loadConfig();
         refreshLlmHint();
-    };
+    }
+
+    $("btnSettings").onclick = () => openSettingsView();
+
+    function parseSettingsDeepLink() {
+        const settings = new URLSearchParams(window.location.search).get("settings");
+        if (settings === "key" || settings === "1" || settings === "true") {
+            openSettingsView();
+        }
+    }
     $("btnBackFromSettings").onclick = () => {
         $("viewSettings").classList.add("hidden");
         $("viewMain").classList.remove("hidden");
@@ -239,6 +248,7 @@
 
     loadConfig();
     refreshLlmHint();
+    parseSettingsDeepLink();
 
     function initSiteNav() {
         const href = typeof window.siteHref === "function" ? window.siteHref : (p) => p;
