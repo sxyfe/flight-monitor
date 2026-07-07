@@ -11,6 +11,7 @@ mkdir -p "$OUT/nl-search" "$OUT/skill"
 # 官网落地页
 cp "$ROOT/web/landing/index.html" "$OUT/index.html"
 cp "$ROOT/web/landing/site.css" "$OUT/site.css"
+cp -R "$ROOT/web/landing/assets" "$OUT/assets"
 cp "$ROOT/web/landing/skill/index.html" "$OUT/skill/index.html"
 
 # nl-search 静态
