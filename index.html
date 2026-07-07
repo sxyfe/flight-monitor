@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Flight Monitor — 自然语言 + 穷举引擎，扫全球特价机票。在线查价、监控与 Cursor Skill。" />
+    <title>Flight Monitor · 特价航班查价与穷举</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Serif+SC:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="site.css" />
+</head>
+
+<body>
+    <div class="mesh" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-header">
+        <a class="brand" href="./">Flight <span>Monitor</span></a>
+        <nav class="site-nav" aria-label="主导航">
+            <a href="./" class="active">首页</a>
+            <a href="nl-search/">在线查价</a>
+            <a href="flight-watch/">监控</a>
+            <a href="skill/">Skill</a>
+            <a href="nl-search/" class="nav-cta">开始查价</a>
+        </nav>
+    </header>
+
+    <main class="page">
+        <p class="tag">RollingGo · 实时查价</p>
+        <h1 class="hero-title">不猜日期，<br />扫组合找特价。</h1>
+        <p class="hero-lead">
+            Flight Monitor 把
+            <strong>自然语言意图</strong>变成结构化搜索，用穷举引擎覆盖多城、多日期、开口程与往返联票——在线 Web 查价、价格矩阵、监控通知与 Skill 同源能力。
+        </p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="nl-search/">开始在线查价</a>
+        </div>
+
+        <div class="product-grid">
+            <article class="product-card">
+                <p class="card-tag">WEB · 主产品</p>
+                <h2 class="card-title">自然语言查价</h2>
+                <p class="card-desc">
+                    中文描述出发地、目的地与日期窗（如「国庆前后东南亚」），支持表单编辑、价格矩阵与精简/全量穷举。结果区含 Chart.js 图表、侧栏筛选与分页列表。
+                </p>
+                <a class="card-link" href="nl-search/">进入 nl-search →</a>
+            </article>
+            <article class="product-card">
+                <p class="card-tag">WATCH · 监控</p>
+                <h2 class="card-title">Flight Watch</h2>
+                <p class="card-desc">
+                    独立 Web 监控：往返/开口程/多段 Watch 规则，定时 RollingGo 查价，降价时飞书或
+                    <strong>微信（PushPlus）</strong>推送。含达美开口 15 条预设。
+                </p>
+                <a class="card-link" href="flight-watch/">进入监控 →</a>
+            </article>
+            <article class="product-card">
+                <p class="card-tag">CURSOR · 开发者</p>
+                <h2 class="card-title">flight-monitor-agent</h2>
+                <p class="card-desc">
+                    在 Cursor 里用自然语言查价，输出暖色 HTML 分页报告。精简模式日常扫价，全量穷举深度挖掘。纯查价 Skill，不含桌面监控。
+                </p>
+                <a class="card-link" href="skill/">安装与说明 →</a>
+            </article>
+        </div>
+
+        <h2 class="section-title">三个产品 · 需要什么 Key？</h2>
+        <p class="section-lead">
+            本项目查价与监控均通过 <strong>RollingGo MCP API</strong> 实时查价；同一套 Key 在 Web 查价、Flight Watch 与 Skill 中通用，只需在各自入口配置一次。
+        </p>
+        <table class="compare-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>在线查价</th>
+                    <th>Flight Watch</th>
+                    <th>Skill</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>RollingGo MCP Key</strong></td>
+                    <td>必填 · 设置页</td>
+                    <td>必填 · 设置 Tab</td>
+                    <td>必填 · <code>.env</code></td>
+                </tr>
+                <tr>
+                    <td><strong>LLM API Key</strong></td>
+                    <td>可选 · 仅自然语言搜索</td>
+                    <td>—</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td><strong>典型场景</strong></td>
+                    <td>探索 / 穷举 / 价格矩阵</td>
+                    <td>长期盯价 · 降价通知</td>
+                    <td>IDE 里一句话出报告</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 class="section-title">首次使用 · 配置 API</h2>
+        <p class="section-lead">
+            第一次使用前完成以下配置；RollingGo Key 为查价必需，LLM Key 仅在自然语言搜索时可选增强解析。
+        </p>
+        <div class="steps steps-setup">
+            <div class="step">
+                <p class="step-num">01 <span class="step-badge required">必填</span></p>
+                <h3>申请 RollingGo MCP Key</h3>
+                <p>
+                    前往
+                    <a href="https://rollinggo.store/" target="_blank" rel="noopener">rollinggo.store</a> 注册并选择 <strong>MCP 接入</strong>，申请航班 MCP API Key（格式
+                    <code>mcp_...</code>）。此 Key 在本项目各产品中通用。
+                </p>
+            </div>
+            <div class="step">
+                <p class="step-num">02 <span class="step-badge required">必填</span></p>
+                <h3>在 API 设置填入并测试</h3>
+                <p>
+                    进入
+                    <a href="nl-search/?settings=key">在线查价 · API 设置</a>，粘贴 RollingGo Key → 保存配置 → 点击「测试 RollingGo」（含机场搜索与查价探针）。
+                </p>
+            </div>
+            <div class="step">
+                <p class="step-num">03 <span class="step-badge optional">可选</span></p>
+                <h3>配置大模型 API Key</h3>
+                <p>
+                    仅在<strong>自然语言搜索</strong> Tab 使用：将「国庆前后东南亚」等句子解析为查询条件。支持 OpenAI 兼容接口；未配置时自动规则回退。表单查询与价格矩阵不受影响。
+                </p>
+            </div>
+            <div class="step">
+                <p class="step-num">04</p>
+                <h3>开始查价</h3>
+                <p>
+                    自然语言 / 表单 / 价格矩阵任选其一，选择精简或全量穷举模式，查看暖色报告与图表联动结果。
+                </p>
+            </div>
+        </div>
+        <div class="screenshot-gallery screenshot-gallery-setup">
+            <figure class="screenshot-item">
+                <img src="assets/screenshots/rollinggo-mcp-landing.png" alt="RollingGo MCP 产品介绍页" loading="lazy" width="960" height="540" />
+                <figcaption>RollingGo MCP · 支持 Cursor 等 IDE 与 Web 查价</figcaption>
+            </figure>
+            <figure class="screenshot-item">
+                <img src="assets/screenshots/rollinggo-register-mcp.png" alt="RollingGo 注册页选择 MCP 接入" loading="lazy" width="960" height="540" />
+                <figcaption>rollinggo.store · 选择 MCP 接入并申请 Key</figcaption>
+            </figure>
+        </div>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="nl-search/?settings=key">去配置 API Key</a>
+            <a class="btn btn-secondary" href="nl-search/">直接开始查价</a>
+        </div>
+
+        <h2 class="section-title">价格矩阵 · 一眼扫日期组合</h2>
+        <p class="section-lead">
+            去程 × 返程二维热力格，支持独立日期范围；移动端可左右滑动查看。
+        </p>
+        <div class="screenshot-gallery">
+            <figure class="screenshot-item">
+                <img src="assets/screenshots/matrix-summary.png" alt="多路线最低价汇总与普吉价格矩阵" loading="lazy" width="960" height="540" />
+                <figcaption>路线汇总 + 北京→普吉矩阵</figcaption>
+            </figure>
+            <figure class="screenshot-item">
+                <img src="assets/screenshots/matrix-manila.png" alt="北京至马尼拉价格矩阵" loading="lazy" width="960" height="540" />
+                <figcaption>北京 → 马尼拉 · 最佳 ¥1,860</figcaption>
+            </figure>
+            <figure class="screenshot-item screenshot-mobile">
+                <img src="assets/screenshots/matrix-krabi-mobile.png" alt="移动端北京至甲米价格矩阵" loading="lazy" width="390" height="844" />
+                <figcaption>移动端 · 北京 → 甲米</figcaption>
+            </figure>
+        </div>
+
+        <h2 class="section-title">配置完成后 · 每次查价三步</h2>
+        <p class="section-lead">API Key 配好后，日常查价只需以下三步。</p>
+        <div class="steps">
+            <div class="step">
+                <p class="step-num">01</p>
+                <h3>说意图</h3>
+                <p>自然语言或表单：多出发地、多国目的地、停留天数、开口程/往返。</p>
+            </div>
+            <div class="step">
+                <p class="step-num">02</p>
+                <h3>选模式</h3>
+                <p>精简模式快速扫热门城市；全量穷举覆盖配置内全部组合。</p>
+            </div>
+            <div class="step">
+                <p class="step-num">03</p>
+                <h3>看报告</h3>
+                <p>暖色报告：图表联动、筛选侧栏、航班号/日期/价格明细。</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">开始使用</h2>
+        <p class="section-lead">
+            尚未配置 Key？先在
+            <a href="nl-search/?settings=key">API 设置</a> 填入 RollingGo MCP Key；也可在
+            <a href="https://rollinggo.store/" target="_blank" rel="noopener">rollinggo.store</a> 申请。
+        </p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="nl-search/">开始查价</a>
+            <a class="btn btn-secondary" href="nl-search/?settings=key">配置 API Key</a>
+        </div>
+
+        <h2 class="section-title">监控与通知</h2>
+        <p class="section-lead">
+            Flight Watch 同样使用 RollingGo MCP Key（在监控页设置 Tab 配置，无需 LLM）。支持达美开口预设一键导入、筛选排序监控列表，降价时飞书或微信 PushPlus 推送。
+        </p>
+        <ul class="feature-list">
+            <li>
+                监控列表：按启用状态筛选、按价格/名称/最近查价排序，低价命中高亮
+            </li>
+            <li>预设库：预览航段 → 导入并编辑 → 补全日期后启用</li>
+        </ul>
+
+        <h2 class="section-title">核心能力</h2>
+        <ul class="feature-list">
+            <li>
+                往返联票 + 开口程（去程 A→B、返程 C→D，出发/返回均在出发地集合内）
+            </li>
+            <li>「国庆」→ 10-01~10-07；「国庆前后」→ 9-28~10-10 等规则解析</li>
+            <li>机场中文搜索 + 城市/机场编码选择，路线优先中文城市名</li>
+            <li>
+                Flight Watch 支持飞书 + 微信 PushPlus 降价通知，达美开口 15 条预设一键导入
+            </li>
+        </ul>
+
+        <p class="note">
+            RollingGo MCP API Key 在本项目 Web 查价、Flight Watch 与 Skill 中通用（Web 在各自设置页配置，Skill 写入
+            <code>.env</code>）。LLM Key 仅在线查价的自然语言搜索可选使用。展示价为成人含税合计参考价，无 OTA 跳转。
+        </p>
+    </main>
+
+    <footer class="site-footer">
+        <p>
+            Flight Monitor ·
+            <a href="https://github.com/sxyfe/flight-monitor" target="_blank" rel="noopener">GitHub</a
+        >
+        ·
+        <a href="https://rollinggo.store/" target="_blank" rel="noopener"
+          >RollingGo</a
+        >
+        ·
+        <a
+          href="https://www.xiaohongshu.com/user/profile/6236bc560000000021025eba"
+          target="_blank"
+          rel="noopener"
+          >寻屿 · 小红书</a
+        >
+      </p>
+    </footer>
+  </body>
+</html>

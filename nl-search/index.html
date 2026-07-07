@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta name="web-base" content="/flight-monitor/nl-search" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>特价机票搜索FlightMonitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="static/ui/tokens.css?v=20260630" />
+    <link rel="stylesheet" href="static/report/report.css?v=20260625" />
+    <link rel="stylesheet" href="static/matrix/matrix-view.css?v=20260709" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+         :root {
+            --bg: #f3efe6;
+            --card: #fffdf8;
+            --ink: #1a1a1a;
+            --muted: #5c5a54;
+            --coral: #e85d3b;
+            --teal: #0d6e6e;
+            --line: rgba(26, 26, 26, 0.1);
+            --shadow: 0 8px 32px rgba(26, 26, 26, 0.08);
+            --oj-bg: #fff3e6;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: "Noto Serif SC", serif;
+            background: var(--bg);
+            color: var(--ink);
+            background-image: radial-gradient( circle at 10% 20%, rgba(232, 93, 59, 0.06), transparent 40%), radial-gradient( circle at 90% 80%, rgba(13, 110, 110, 0.06), transparent 45%);
+        }
+        
+        header {
+            padding: 20px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--line);
+            background: rgba(255, 253, 248, 0.92);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        
+        header h1 {
+            font-size: 1.25rem;
+        }
+        
+        header h1 span {
+            color: var(--coral);
+        }
+
+        .site-nav-mini {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .site-nav-mini a {
+            font-size: 0.82rem;
+            padding: 6px 10px;
+            border-radius: 8px;
+            color: var(--muted);
+            text-decoration: none;
+        }
+
+        .site-nav-mini a:hover {
+            color: var(--teal);
+            background: rgba(13, 110, 110, 0.08);
+        }
+
+        .site-nav-mini a.active {
+            color: var(--coral);
+            font-weight: 600;
+        }
+
+        .config-status-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0 4px;
+        }
+
+        .config-pill {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .config-pill.ok {
+            border-color: rgba(45, 106, 79, 0.35);
+            color: #2d6a4f;
+            background: rgba(45, 106, 79, 0.08);
+        }
+
+        .config-pill.off {
+            color: var(--muted);
+        }
+        
+        .wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 20px 16px 60px;
+        }
+        
+        .card {
+            background: var(--card);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .card h2 {
+            font-size: 0.95rem;
+            color: var(--teal);
+            margin-bottom: 12px;
+        }
+        
+        .tabs,
+        .result-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--line);
+            margin-bottom: 16px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--muted);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab-btn.active {
+            color: var(--coral);
+            border-bottom-color: var(--coral);
+            font-weight: 700;
+        }
+        
+        .btn {
+            padding: 9px 16px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: var(--coral);
+            color: #fff;
+        }
+        
+        .btn-secondary {
+            background: var(--teal);
+            color: #fff;
+        }
+        
+        .btn-ghost {
+            background: #fff;
+            border: 1px solid var(--line);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 12px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .progress-wrap {
+            height: 8px;
+            background: var(--line);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--teal), var(--coral));
+            width: 0;
+            transition: width 0.3s;
+        }
+        
+        #progressText {
+            white-space: pre-line;
+        }
+        
+        .airport-picker .el-input__suffix {
+            display: none;
+        }
+        
+        .parse-hint {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.45;
+            max-width: 520px;
+        }
+        
+        .parse-hint-ok {
+            color: var(--teal);
+        }
+        
+        .privacy-callout {
+            background: rgba(13, 110, 110, 0.08);
+            border: 1px solid rgba(13, 110, 110, 0.2);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.85rem;
+            color: var(--ink);
+            line-height: 1.55;
+            margin-bottom: 16px;
+        }
+        
+        .privacy-callout strong {
+            color: var(--teal);
+        }
+        
+        #resultsSection.card {
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top;
+        }
+        
+        th {
+            color: var(--muted);
+            white-space: nowrap;
+        }
+        
+        tr.oj-row td {
+            background: var(--oj-bg);
+        }
+        
+        tr.detail-row td {
+            background: #f8f6f0;
+            font-size: 0.78rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+        
+        .price {
+            color: var(--coral);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        
+        .seg {
+            margin: 2px 0;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+        
+        #intent-editor-app {
+            font-family: ui-sans-serif, system-ui, "PingFang SC", sans-serif;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .results-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .results-toolbar-label {
+            font-size: 0.88rem;
+            color: var(--teal);
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .grid2 {
+                grid-template-columns: 1fr;
+            }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 14px 16px;
+            }
+            header h1 {
+                font-size: 1.05rem;
+            }
+            .site-nav-mini {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap;
+                max-width: 100%;
+            }
+            .site-nav-mini a {
+                flex-shrink: 0;
+            }
+            .tabs,
+            .result-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap;
+            }
+            .tab-btn {
+                flex-shrink: 0;
+                padding: 8px 14px;
+                font-size: 0.82rem;
+            }
+            .wrap {
+                padding: 14px 12px 48px;
+            }
+            .card {
+                padding: 14px;
+            }
+        }
+        
+        label {
+            display: block;
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin: 10px 0 4px;
+        }
+        
+        input[type="text"],
+        input[type="password"],
+        input:not([type]) {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+        
+        .key-row {
+            display: flex;
+            gap: 6px;
+            align-items: stretch;
+        }
+        
+        .key-row input {
+            flex: 1;
+        }
+        
+        .btn-eye {
+            padding: 0 12px;
+            min-width: 44px;
+            font-size: 1rem;
+        }
+        
+        .btn-card {
+            background: var(--card);
+            color: var(--ink);
+            border: 1px solid var(--line);
+        }
+        
+        .btn-card:hover {
+            background: #fff;
+        }
+        
+        .nl-action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-top: 12px;
+        }
+        
+        #confirmMsg {
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+        
+        #confirmMsg.msg-ok {
+            color: var(--teal);
+        }
+        
+        #confirmMsg.msg-warn {
+            color: #b45309;
+        }
+        
+        #confirmMsg.msg-err {
+            color: #dc2626;
+        }
+
+        .search-toolbar-wrap {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--line);
+        }
+
+        .search-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        #searchStatus {
+            font-size: 0.85rem;
+            margin: 10px 0 0;
+            min-height: 1.2em;
+        }
+
+        #searchStatus.msg-ok {
+            color: var(--teal);
+        }
+
+        #searchStatus.msg-warn {
+            color: #b45309;
+        }
+
+        #searchStatus.msg-err {
+            color: #dc2626;
+        }
+
+        .search-history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .search-history-header h2 {
+            margin: 0;
+        }
+
+        .search-history-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .search-history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .search-history-main {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .search-history-badge {
+            flex-shrink: 0;
+            font-size: 0.72rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(13, 110, 110, 0.1);
+            color: var(--teal);
+            font-weight: 600;
+        }
+
+        .search-history-summary {
+            font-size: 0.85rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .search-history-time {
+            flex-shrink: 0;
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .search-history-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 0.78rem;
+        }
+
+        @media (max-width: 768px) {
+            .search-history-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-history-main {
+                flex-wrap: wrap;
+            }
+            .search-history-summary {
+                white-space: normal;
+            }
+            .search-history-actions {
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>特价机票搜索 <span>Flight Monitor</span></h1>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <nav class="site-nav-mini" aria-label="站点导航">
+                <a href="#" id="navHome">首页</a>
+                <a href="#" id="navWatch">监控</a>
+                <a href="#" id="navSkill">Skill</a>
+                <a href="#" id="navNlSearch" class="active">查价</a>
+            </nav>
+            <button class="btn btn-ghost" id="btnSettings">API 设置</button>
+        </div>
+    </header>
+
+    <div class="wrap">
+        <!-- 设置页（独立展示） -->
+        <section class="card hidden" id="viewSettings">
+            <div class="settings-header">
+                <h2>API 配置</h2>
+                <button class="btn btn-ghost" id="btnBackFromSettings">
+            ← 返回查询
+          </button>
+            </div>
+            <div class="privacy-callout">
+                <strong>隐私说明</strong>：API Key 仅保存在本机
+                <code>web/nl-search/.credentials.local.json</code
+          >，不会上传或泄漏给项目开发者。请勿在公共设备保存密钥。
+        </div>
+        <div class="grid2">
+          <div>
+            <p
+              style="
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: var(--teal);
+                margin-bottom: 8px;
+              "
+            >
+              RollingGo
+            </p>
+            <label for="rgUrl">Base URL</label>
+            <input id="rgUrl" type="text" value="https://mcp.rollinggo.cn" />
+            <label for="rgKey">API Key (Bearer)</label>
+            <div class="key-row">
+              <input
+                id="rgKey"
+                type="password"
+                placeholder="mcp_xxx"
+                autocomplete="off"
+              />
+              <button
+                type="button"
+                class="btn btn-ghost btn-eye"
+                data-target="rgKey"
+                title="显示/隐藏"
+              >
+                👁
+              </button>
+            </div>
+          </div>
+          <div>
+            <p
+              style="
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: var(--teal);
+                margin-bottom: 8px;
+              "
+            >
+              LLM（OpenAI 兼容）
+            </p>
+            <label for="llmUrl">Base URL</label>
+            <input id="llmUrl" type="text" value="https://api.openai.com/v1" />
+            <label for="llmKey">API Key</label>
+            <div class="key-row">
+              <input
+                id="llmKey"
+                type="password"
+                placeholder="sk-..."
+                autocomplete="off"
+              />
+              <button
+                type="button"
+                class="btn btn-ghost btn-eye"
+                data-target="llmKey"
+                title="显示/隐藏"
+              >
+                👁
+              </button>
+            </div>
+            <label for="llmModel">Model</label>
+            <input id="llmModel" type="text" value="gpt-4o-mini" />
+          </div>
+        </div>
+        <div class="config-status-row" id="configStatusRow" aria-live="polite"></div>
+        <div class="row" style="margin-top: 16px">
+          <button class="btn btn-primary" id="btnSaveConfig">保存配置</button>
+          <button class="btn btn-ghost" id="btnTestRg">测试 RollingGo</button>
+          <button class="btn btn-ghost" id="btnTestLlm">测试 LLM</button>
+          <span
+            id="configStatus"
+            style="font-size: 0.85rem; color: var(--teal)"
+          ></span>
+        </div>
+        <div class="settings-search-limit" style="margin-top: 20px">
+          <p
+            style="
+              font-size: 0.9rem;
+              font-weight: 600;
+              color: var(--teal);
+              margin-bottom: 8px;
+            "
+          >
+            搜索软提示
+          </p>
+          <label class="ui-checkbox-row" style="display: flex; align-items: center; gap: 8px">
+            <input type="checkbox" id="softLimitEnabled" checked />
+            <span>启用搜索次数软提示（超过阈值时在搜索栏警告，不阻断）</span>
+          </label>
+          <label for="softQueryLimit" style="margin-top: 10px; display: block"
+            >软提示阈值（次）</label
+          >
+          <input id="softQueryLimit" type="number" min="0" step="50" value="500" />
+          <p class="parse-hint" style="margin-top: 8px">
+            设为 0 或关闭上方开关即不提示。全量穷举仍可直接启动。
+          </p>
+        </div>
+      </section>
+
+      <!-- 主查询页 -->
+      <div id="viewMain">
+        <section class="card">
+          <div class="tabs">
+            <button class="tab-btn active" id="tabNl">自然语言查询</button>
+            <button class="tab-btn" id="tabForm">表单查询</button>
+            <button class="tab-btn" id="tabMatrix">价格矩阵</button>
+          </div>
+          <div id="panelNl">
+            <textarea
+              id="nlQuery"
+              placeholder="例：北京、天津、河北、山西出发，国庆节前后前往日本…"
+            ></textarea>
+            <div class="nl-action-row">
+              <button class="btn btn-secondary" id="btnParse">解析意图</button>
+              <span
+                id="parseMsg"
+                style="font-size: 0.85rem; color: var(--muted)"
+              ></span>
+            </div>
+            <p id="confirmMsg"></p>
+            <p id="llmHint" class="parse-hint" style="margin-top: 10px">
+              在设置中配置 LLM
+              后，大语言模型解析更准确；未配置时使用规则回退，复杂句子可能不完整。
+            </p>
+          </div>
+          <div id="panelForm" style="display: none">
+            <div id="intent-editor-app"></div>
+          </div>
+          <div id="panelMatrix" style="display: none">
+            <div id="matrix-editor-app"></div>
+          </div>
+          <div class="search-toolbar-wrap" id="searchToolbarStandard">
+            <div class="search-toolbar">
+              <label class="search-mode-label">搜索模式</label>
+              <div id="search-mode-app"></div>
+              <button class="btn btn-primary" id="btnSearch">
+                开始搜索
+              </button>
+            </div>
+            <p id="searchStatus" aria-live="polite"></p>
+          </div>
+          <div class="search-toolbar-wrap hidden" id="searchToolbarMatrix">
+            <div class="search-toolbar">
+              <button class="btn btn-primary" id="btnMatrixSearch">
+                开始矩阵搜索
+              </button>
+            </div>
+            <p id="matrixSearchStatus" aria-live="polite"></p>
+          </div>
+        </section>
+
+        <section class="card hidden" id="searchHistorySection">
+          <div class="search-history-header">
+            <h2>搜索记录</h2>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnClearSearchHistory">清空</button>
+          </div>
+          <ul class="search-history-list" id="searchHistoryList"></ul>
+        </section>
+
+        <section class="card hidden" id="progressSection">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+            <h2 style="margin: 0">搜索进度</h2>
+            <button class="btn btn-ghost" id="btnStopSearch" type="button">停止搜索</button>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <div
+            id="progressText"
+            style="font-size: 0.85rem; color: var(--muted)"
+          >
+            准备中…
+          </div>
+          <div
+            id="progressHits"
+            style="font-size: 0.8rem; color: var(--teal); margin-top: 4px"
+          ></div>
+        </section>
+
+        <section class="card hidden" id="resultsSection">
+          <div class="results-toolbar">
+            <span class="results-toolbar-label">穷举报告</span>
+          </div>
+          <div class="nl-report" id="reportRoot">
+            <header class="hero">
+              <div class="hero-badge">FLIGHT REPORT</div>
+              <h1>航班特价分析报告</h1>
+              <p class="hero-sub" id="meta-line">搜索完成后展示结果…</p>
+              <div class="hero-stats" id="hero-stats"></div>
+            </header>
+
+            <aside class="filters-panel">
+              <div class="panel-head">
+                <span class="panel-icon">◈</span>
+                <h2>筛选控制台</h2>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">行程类型</label>
+                <div class="trip-tabs" id="trip-tabs">
+                  <button type="button" class="tab active" data-trip="all">
+                    全部
+                  </button>
+                  <button type="button" class="tab" data-trip="round_trip">
+                    往返
+                  </button>
+                  <button type="button" class="tab" data-trip="open_jaw">
+                    开口程
+                  </button>
+                </div>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">国家 / 地区</label>
+                <div class="chip-grid" id="country-chips"></div>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">目的地</label>
+                <div class="chip-grid" id="dest-chips"></div>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label"
+                  >价格区间 <span id="price-range-label" class="mono"></span
+                ></label>
+                <div class="range-dual">
+                  <input
+                    type="range"
+                    id="price-min"
+                    min="0"
+                    max="100"
+                    step="50"
+                    value="0"
+                  />
+                  <input
+                    type="range"
+                    id="price-max"
+                    min="0"
+                    max="100"
+                    step="50"
+                    value="100"
+                  />
+                </div>
+                <div class="price-buckets" id="price-buckets"></div>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">出发城市</label>
+                <div class="chip-grid" id="origin-chips"></div>
+              </div>
+              <button type="button" class="reset-btn" id="reset-filters">
+                重置筛选
+              </button>
+            </aside>
+
+            <main class="dashboard">
+              <section class="chart-grid">
+                <article class="chart-card chart-card--wide">
+                  <header>
+                    <h3>目的地最低价</h3>
+                    <span class="chart-hint">横向对比各城市底价</span>
+                  </header>
+                  <div class="chart-wrap">
+                    <canvas id="chart-dest-bar"></canvas>
+                  </div>
+                </article>
+                <article class="chart-card">
+                  <header>
+                    <h3>价格分布</h3>
+                    <span class="chart-hint">命中数量按价格段</span>
+                  </header>
+                  <div class="chart-wrap">
+                    <canvas id="chart-price-hist"></canvas>
+                  </div>
+                </article>
+                <article class="chart-card">
+                  <header>
+                    <h3>国家占比</h3>
+                    <span class="chart-hint">按去程目的地归属</span>
+                  </header>
+                  <div class="chart-wrap chart-wrap--donut">
+                    <canvas id="chart-country"></canvas>
+                  </div>
+                </article>
+                <article class="chart-card chart-card--wide">
+                  <header>
+                    <h3>停留天数 × 价格</h3>
+                    <span class="chart-hint">散点 · 气泡大小=同价条数</span>
+                  </header>
+                  <div class="chart-wrap">
+                    <canvas id="chart-scatter"></canvas>
+                  </div>
+                </article>
+                <article class="chart-card chart-card--wide">
+                  <header>
+                    <h3>出发日期热力</h3>
+                    <span class="chart-hint">各日出票命中数</span>
+                  </header>
+                  <div class="chart-wrap">
+                    <canvas id="chart-date"></canvas>
+                  </div>
+                </article>
+              </section>
+
+              <section class="leg-tables-section">
+                <div class="leg-tables-grid">
+                  <article class="table-section table-section--compact">
+                    <header class="table-head">
+                      <div>
+                        <h3>去程低价榜</h3>
+                        <span class="table-count" id="out-leg-count">0 条</span>
+                      </div>
+                      <span class="chart-hint"
+                        >按去程价格 ↑ · 同航线取最低</span
+                      >
+                    </header>
+                    <div class="table-wrap table-wrap--scroll">
+                      <table id="out-legs-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>路线</th>
+                            <th>出发日</th>
+                            <th>去程价</th>
+                            <th>类型</th>
+                            <th>航班详情</th>
+                          </tr>
+                        </thead>
+                        <tbody id="out-legs-tbody"></tbody>
+                      </table>
+                    </div>
+                  </article>
+                  <article class="table-section table-section--compact">
+                    <header class="table-head">
+                      <div>
+                        <h3>返程低价榜</h3>
+                        <span class="table-count" id="ret-leg-count">0 条</span>
+                      </div>
+                      <span class="chart-hint"
+                        >按返程价格 ↑ · 同航线取最低</span
+                      >
+                    </header>
+                    <div class="table-wrap table-wrap--scroll">
+                      <table id="ret-legs-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>路线</th>
+                            <th>返程日</th>
+                            <th>返程价</th>
+                            <th>类型</th>
+                            <th>航班详情</th>
+                          </tr>
+                        </thead>
+                        <tbody id="ret-legs-tbody"></tbody>
+                      </table>
+                    </div>
+                  </article>
+                </div>
+                <p class="table-note">
+                  开口程为分段单程价；往返联票去/返程表展示联票总价（未拆分）。
+                </p>
+              </section>
+
+              <section class="table-section">
+                <header class="table-head">
+                  <div>
+                    <h3>航班明细</h3>
+                    <span class="table-count" id="table-count">0 条</span>
+                  </div>
+                  <div class="sort-controls">
+                    <label for="sort-by">排序</label>
+                    <select id="sort-by">
+                      <option value="price-asc">价格 ↑</option>
+                      <option value="price-desc">价格 ↓</option>
+                      <option value="dest-asc">目的地 A→Z</option>
+                      <option value="date-asc">出发日期 ↑</option>
+                      <option value="stay-asc">停留天数 ↑</option>
+                    </select>
+                  </div>
+                </header>
+                <div class="pager" id="pager">
+                  <button type="button" class="pg-prev">上一页</button>
+                  <span class="pg-info"></span>
+                  <button type="button" class="pg-next">下一页</button>
+                  <label
+                    >每页
+                    <select class="pg-size">
+                      <option value="20">20</option>
+                      <option value="50" selected>50</option>
+                      <option value="100">100</option>
+                    </select>
+                  </label>
+                  <span class="pg-jump-wrap"
+                    >跳至第<input
+                      type="number"
+                      class="pg-jump"
+                      min="1"
+                      step="1"
+                    />页<button type="button" class="pg-go">跳转</button></span
+                  >
+                </div>
+                <div class="table-wrap">
+                  <table id="offers-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>类型</th>
+                        <th>路线</th>
+                        <th>出发</th>
+                        <th>返程</th>
+                        <th>停留</th>
+                        <th>价格</th>
+                        <th>可订</th>
+                        <th>航班详情</th>
+                      </tr>
+                    </thead>
+                    <tbody id="offers-tbody"></tbody>
+                  </table>
+                </div>
+                <p class="table-note">
+                  开口程为两段单程最低价相加，不代表可联程预订。
+                </p>
+              </section>
+              <p class="footer">
+                nl-search · RollingGo 实时查价 · 分页展示全部命中
+              </p>
+            </main>
+          </div>
+        </section>
+
+        <section class="card hidden" id="matrixResultsSection">
+          <div class="results-toolbar">
+            <span class="results-toolbar-label">价格矩阵结果</span>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnMatrixBack">← 修改条件</button>
+          </div>
+          <div id="matrixReportRoot"></div>
+        </section>
+      </div>
+    </div>
+
+    <div class="wrap" style="padding-bottom: 24px">
+      <section class="site-author">
+        <img
+          class="site-author-avatar"
+          src="static/assets/author-xunyu.png"
+          alt="寻屿"
+          width="56"
+          height="56"
+        />
+        <div class="site-author-info">
+          <h3>寻屿</h3>
+          <p>独立开发者 / 大厂程序员 / AI Native 工程师</p>
+          <p>
+            <a
+              href="https://www.xiaohongshu.com/user/profile/6236bc560000000021025eba"
+              target="_blank"
+              rel="noopener noreferrer"
+              >小红书主页</a
+            >
+          </p>
+        </div>
+      </section>
+      <p class="site-credits">
+        感谢
+        <a href="https://rollinggo.store/" target="_blank" rel="noopener noreferrer"
+          >RollingGo</a
+        >
+        的MCP服务提供的航班查价能力
+      </p>
+    </div>
+
+    <script src="static/web-base.js?v=20260706"></script>
+    <script src="static/vendor/vue.global.js?v=20260625"></script>
+    <script src="static/intent-query.js?v=20260625"></script>
+    <script src="static/ui/components.js?v=20260630"></script>
+    <script src="static/ui/airport-picker.js?v=20260704c"></script>
+    <script src="static/results-analytics.js?v=20260630"></script>
+    <script src="static/intent-editor.js?v=20260625"></script>
+    <script src="static/matrix-editor.js?v=20260706"></script>
+    <script src="static/report/report.js?v=20260625"></script>
+    <script src="static/report-bridge.js?v=20260625"></script>
+    <script src="static/matrix/matrix-view.js?v=20260710"></script>
+    <script src="static/search-mode.js?v=20260625"></script>
+    <script src="static/search-history.js?v=20260710"></script>
+    <script src="static/app.js?v=20260711"></script>
+  </body>
+</html>
