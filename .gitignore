@@ -44,3 +44,4 @@ __pycache__/
 output/
 scripts/exhaustive_results.json
 scripts/exhaustive_results_snapshot_*.json
+.vercel
